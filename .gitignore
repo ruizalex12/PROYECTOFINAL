@@ -1,0 +1,17 @@
+# Dependencias pesadas y temporales
+node_modules/
+APK/
+build/
+.dart_tool/
+.idea/
+.vscode/
+
+# Archivos de prueba o basura local
+fsdfsdfsdfsd
+*.txt
+
+# Seguridad de Android y llaves
+android/key.properties
+*.jks
+*.keystore
+.env
