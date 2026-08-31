@@ -62,9 +62,10 @@ class _EnrollmentState extends State<EnrollmentScreen> {
         });
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -76,9 +77,10 @@ class _EnrollmentState extends State<EnrollmentScreen> {
       body: FutureBuilder<List<dynamic>>(
           future: data,
           builder: (context, s) {
-            if (s.connectionState == ConnectionState.waiting)
+            if (s.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(
                   message: friendlyError(s.error!),
                   retry: () => setState(() => data = Future.wait([
@@ -86,6 +88,7 @@ class _EnrollmentState extends State<EnrollmentScreen> {
                         service.courses(),
                         service.activePeriods()
                       ])));
+            }
             final students = s.data![0] as List<Student>,
                 courses = s.data![1] as List<Course>,
                 periods = s.data![2] as List<AcademicPeriod>;

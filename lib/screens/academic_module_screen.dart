@@ -126,7 +126,9 @@ class _AcademicModuleScreenState extends State<AcademicModuleScreen> {
               ? '${widget.module.singular} guardado correctamente.'
               : '${widget.module.singular} actualizado correctamente.')));
     }
-    for (final c in controls.values) c.dispose();
+    for (final c in controls.values) {
+      c.dispose();
+    }
   }
 
   Future<void> _delete(Map<String, dynamic> row) async {
@@ -171,16 +173,19 @@ class _AcademicModuleScreenState extends State<AcademicModuleScreen> {
       body: FutureBuilder<List<Map<String, dynamic>>>(
           future: _future,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (snapshot.hasError)
+            }
+            if (snapshot.hasError) {
               return ErrorState(
                   message: friendlyError(snapshot.error!), retry: _reload);
+            }
             final rows = snapshot.data ?? [];
-            if (rows.isEmpty)
+            if (rows.isEmpty) {
               return Center(
                   child:
                       Text('Aún no hay ${widget.module.title.toLowerCase()}'));
+            }
             return ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: rows.length,

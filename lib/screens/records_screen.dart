@@ -66,16 +66,17 @@ class _RecordsScreenState extends State<RecordsScreen> {
       await context.read<RegistroRepository>().delete(item.id!);
       await _load();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('No se pudo eliminar: $e')));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registros demo')),
+      appBar: AppBar(title: const Text('Registros')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         icon: const Icon(Icons.add),

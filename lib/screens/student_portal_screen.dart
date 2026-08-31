@@ -81,8 +81,9 @@ class _Home extends StatelessWidget {
   Widget build(BuildContext context) => FutureBuilder<List<CourseAssignment>>(
       future: service.myCourses(profile.studentId!),
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
         final courses = snapshot.data!;
         return ListView(padding: const EdgeInsets.all(20), children: [
           Container(
@@ -298,13 +299,15 @@ class _ScheduleState extends State<_Schedule> {
       await widget.service.checkIn(
           widget.profile.studentId!, session['asignacion_id'].toString(),
           sessionId: session['id'].toString());
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Asistencia marcada correctamente.')));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
     }
   }
 }
@@ -326,27 +329,30 @@ class _DocumentsState extends State<_Documents> {
     load();
   }
 
-  void load() => setState(
-      () => future = widget.service.documents(widget.profile.studentId!));
+  Future<void> load() async {
+    final documents = await widget.service.documents(widget.profile.studentId!);
+    if (!mounted) return;
+    setState(() {
+      future = Future.value(documents);
+    });
+  }
+
   Future<void> upload() async {
     final result = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png'],
-        withData: true);
-    if (result == null) return;
-    final file = result.files.single;
-    if (file.bytes == null) return;
+        allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
+    final file = result.single;
+    final bytes = await file.readAsBytes();
     setState(() => busy = true);
     try {
       await widget.service.uploadDocument(
-          studentId: widget.profile.studentId!,
-          name: file.name,
-          bytes: file.bytes!);
+          studentId: widget.profile.studentId!, name: file.name, bytes: bytes);
       load();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -437,9 +443,10 @@ class _ProfileState extends State<_Profile> {
           career: career.text);
       if (mounted) setState(() => edit = false);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }

@@ -40,7 +40,7 @@ class AboutAdaptationScreen extends StatelessWidget {
           }
           final item = items[index - 1];
           return ListTile(
-            leading: CircleAvatar(child: Text('${index}')),
+            leading: CircleAvatar(child: Text('$index')),
             title: Text(item.$1,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(item.$2),

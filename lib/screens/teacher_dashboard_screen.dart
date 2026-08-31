@@ -28,8 +28,14 @@ class _State extends State<TeacherDashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => load());
   }
 
-  void load() =>
-      setState(() => future = service.myCourses(widget.profile.teacherId!));
+  Future<void> load() async {
+    final courses = await service.myCourses(widget.profile.teacherId!);
+    if (!mounted) return;
+    setState(() {
+      future = Future.value(courses);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final config = context.watch<AppConfig>();
@@ -47,18 +53,21 @@ class _State extends State<TeacherDashboardScreen> {
               child: FutureBuilder<List<CourseAssignment>>(
                   future: future,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting)
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
-                    if (snapshot.hasError)
+                    }
+                    if (snapshot.hasError) {
                       return ErrorState(
                           message: friendlyError(snapshot.error!), retry: load);
+                    }
                     final rows = snapshot.data!;
-                    if (rows.isEmpty)
+                    if (rows.isEmpty) {
                       return const EmptyState(
                           icon: Icons.class_outlined,
                           title: 'No tienes cursos asignados todavía',
                           message:
                               'Cuando un administrador te asigne un curso, aparecerá aquí.');
+                    }
                     return ListView(
                         padding: const EdgeInsets.all(20),
                         children: [

@@ -65,11 +65,12 @@ class _State extends State<TeacherCourseScreen>
       future: students,
       builder: (_, s) {
         if (!s.hasData) return const Center(child: CircularProgressIndicator());
-        if (s.data!.isEmpty)
+        if (s.data!.isEmpty) {
           return const EmptyState(
               icon: Icons.person_off,
               title: 'Curso sin estudiantes',
               message: 'Los estudiantes matriculados aparecerán aquí.');
+        }
         return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: s.data!.length,
@@ -103,8 +104,9 @@ class _State extends State<TeacherCourseScreen>
   Widget taskList() => FutureBuilder<List<Map<String, dynamic>>>(
       future: taskFuture,
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
         return ListView(padding: const EdgeInsets.all(16), children: [
           FilledButton.icon(
               onPressed: () => taskForm(),
@@ -186,9 +188,10 @@ class _State extends State<TeacherCourseScreen>
             deadline: deadline.text);
         load();
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        }
       }
     }
     title.dispose();
@@ -232,13 +235,15 @@ class _State extends State<TeacherCourseScreen>
       try {
         await service.openAttendance(
             widget.assignment.id, title.text, int.tryParse(minutes.text) ?? 30);
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Asistencia abierta.')));
+        }
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        }
       }
     }
     title.dispose();
@@ -273,11 +278,12 @@ class _State extends State<TeacherCourseScreen>
         if (!s.hasData) return const Center(child: CircularProgressIndicator());
         final studentRows = s.data![0] as List<Student>;
         final evaluationRows = s.data![1] as List<Evaluation>;
-        if (evaluationRows.isEmpty)
+        if (evaluationRows.isEmpty) {
           return const EmptyState(
               icon: Icons.assignment_late,
               title: 'Primero crea una evaluación',
               message: 'Las notas pertenecen a una evaluación existente.');
+        }
         final widgets = <Widget>[];
         for (final evaluation in evaluationRows) {
           widgets.add(Text(evaluation.title,
@@ -311,13 +317,15 @@ class _State extends State<TeacherCourseScreen>
     }
     try {
       await service.saveGrade(evaluationId, studentId, score);
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Nota guardada.')));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
     }
   }
 
@@ -364,9 +372,10 @@ class _State extends State<TeacherCourseScreen>
             type.text, date, double.tryParse(weight.text) ?? 0);
         load();
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        }
       }
     }
   }
@@ -397,9 +406,10 @@ class _State extends State<TeacherCourseScreen>
                 ]));
     if (ok == true) {
       await service.publish(widget.assignment.id, title.text, content.text);
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Anuncio publicado.')));
+      }
     }
   }
 }
@@ -459,9 +469,10 @@ class _SubmissionsState extends State<_SubmissionsScreen> {
             (widget.task['puntaje_maximo'] as num).toDouble());
         load();
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        }
       }
     }
     score.dispose();
@@ -474,13 +485,15 @@ class _SubmissionsState extends State<_SubmissionsScreen> {
       body: FutureBuilder<List<Map<String, dynamic>>>(
           future: future,
           builder: (context, s) {
-            if (!s.hasData)
+            if (!s.hasData) {
               return const Center(child: CircularProgressIndicator());
-            if (s.data!.isEmpty)
+            }
+            if (s.data!.isEmpty) {
               return const EmptyState(
                   icon: Icons.inbox_outlined,
                   title: 'Sin entregas todavía',
                   message: 'Las entregas de estudiantes aparecerán aquí.');
+            }
             return ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: s.data!.length,
@@ -492,7 +505,9 @@ class _SubmissionsState extends State<_SubmissionsScreen> {
                               ? 'Estudiante'
                               : '${student['nombres']} ${student['apellidos']}'),
                           subtitle: Text(
-                              '${row['comentario']}\nNota: ${row['nota'] ?? 'Pendiente'}'),
+                              '${row['comentario'].toString().isEmpty ? 'Sin comentario' : row['comentario']}\n'
+                              '${row['archivo_nombre'] == null ? 'Sin archivo adjunto' : 'Archivo: ${row['archivo_nombre']}'}\n'
+                              'Nota: ${row['nota'] ?? 'Pendiente'}'),
                           isThreeLine: true,
                           trailing: FilledButton.tonal(
                               onPressed: () => grade(row),
@@ -521,16 +536,19 @@ class _AttendanceTileState extends State<_AttendanceTile> {
               .toList(),
           onChanged: (v) async {
             if (v != null) {
+              final messenger = ScaffoldMessenger.of(context);
               setState(() => value = v);
               try {
                 await widget.onSave(v);
-                if (mounted)
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                if (mounted) {
+                  messenger.showSnackBar(SnackBar(
                       content: Text('${widget.student.fullName}: $v')));
+                }
               } catch (e) {
-                if (mounted)
-                  ScaffoldMessenger.of(context)
+                if (mounted) {
+                  messenger
                       .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+                }
               }
             }
           }));

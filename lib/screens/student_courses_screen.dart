@@ -32,18 +32,21 @@ class _State extends State<StudentCoursesScreen> {
         body: FutureBuilder<List<CourseAssignment>>(
             future: future,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
-              if (snapshot.hasError)
+              }
+              if (snapshot.hasError) {
                 return ErrorState(
                     message: friendlyError(snapshot.error!), retry: load);
+              }
               final rows = snapshot.data!;
-              if (rows.isEmpty)
+              if (rows.isEmpty) {
                 return const EmptyState(
                     icon: Icons.class_outlined,
                     title: 'No tienes cursos',
                     message:
                         'Solo verás los cursos en los que estés matriculado.');
+              }
               return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: rows.length,

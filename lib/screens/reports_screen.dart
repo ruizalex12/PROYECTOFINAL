@@ -28,10 +28,12 @@ class _State extends State<ReportsScreen> {
       body: FutureBuilder<Map<String, int>>(
           future: future,
           builder: (c, s) {
-            if (s.connectionState == ConnectionState.waiting)
+            if (s.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(message: friendlyError(s.error!), retry: load);
+            }
             return ListView(padding: const EdgeInsets.all(20), children: [
               Text('Resumen institucional',
                   style: Theme.of(context)

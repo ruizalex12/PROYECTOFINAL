@@ -65,9 +65,10 @@ class _AssignmentState extends State<AssignmentScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -79,9 +80,10 @@ class _AssignmentState extends State<AssignmentScreen> {
       body: FutureBuilder<List<dynamic>>(
           future: data,
           builder: (context, s) {
-            if (s.connectionState == ConnectionState.waiting)
+            if (s.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(
                   message: friendlyError(s.error!),
                   retry: () => setState(() => data = Future.wait([
@@ -90,6 +92,7 @@ class _AssignmentState extends State<AssignmentScreen> {
                         service.courses(),
                         service.activePeriods()
                       ])));
+            }
             final teachers = s.data![0] as List<Teacher>,
                 subjects = s.data![1] as List<Subject>,
                 courses = s.data![2] as List<Course>,

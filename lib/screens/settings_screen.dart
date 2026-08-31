@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../config/app_config.dart';
 import '../controllers/preferences_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -28,7 +27,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final prefs = context.watch<PreferencesController>();
-    final config = context.watch<AppConfig>();
     return Scaffold(
       appBar: AppBar(title: const Text('Preferencias locales')),
       body: ListView(
@@ -43,9 +41,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           FilledButton.icon(
             onPressed: () async {
               await prefs.setStudentName(_name.text);
-              if (context.mounted)
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text('Nombre guardado localmente')));
+              }
             },
             icon: const Icon(Icons.save),
             label: const Text('Guardar nombre'),
@@ -57,14 +56,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: const Text(
                 'Cierra la app y vuelve a abrir: la preferencia debe permanecer.'),
             onChanged: prefs.setDarkMode,
-          ),
-          const Divider(height: 32),
-          ListTile(
-            leading: const Icon(Icons.memory),
-            title: Text('Modo actual: ${config.modeLabel}'),
-            subtitle: Text(config.useSupabase
-                ? 'Datos remotos con autenticación.'
-                : 'Datos demo en memoria.'),
           ),
         ],
       ),

@@ -48,11 +48,13 @@ class _State extends State<StudentDashboardScreen> {
               child: FutureBuilder<List<CourseAssignment>>(
                   future: future,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting)
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
-                    if (snapshot.hasError)
+                    }
+                    if (snapshot.hasError) {
                       return ErrorState(
                           message: friendlyError(snapshot.error!), retry: load);
+                    }
                     final courses = snapshot.data!;
                     return ListView(
                         padding: const EdgeInsets.all(20),

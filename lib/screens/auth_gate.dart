@@ -36,8 +36,9 @@ class _AuthGateState extends State<AuthGate> {
       return StreamBuilder<AuthState>(
           stream: Supabase.instance.client.auth.onAuthStateChange,
           builder: (_, __) {
-            if (Supabase.instance.client.auth.currentSession == null)
+            if (Supabase.instance.client.auth.currentSession == null) {
               return const LoginScreen();
+            }
             return _RoleRouter(
                 key: ValueKey(
                     '${Supabase.instance.client.auth.currentUser?.id}-$revision'));
@@ -79,7 +80,7 @@ class _RoleRouterState extends State<_RoleRouter> {
   Widget build(BuildContext context) => FutureBuilder<Profile>(
       future: profile,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting)
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
               body: Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -87,23 +88,27 @@ class _RoleRouterState extends State<_RoleRouter> {
             SizedBox(height: 16),
             Text('Preparando tu espacio académico...')
           ])));
-        if (snapshot.hasError)
+        }
+        if (snapshot.hasError) {
           return Scaffold(
               appBar: AppBar(actions: [
                 IconButton(onPressed: logout, icon: const Icon(Icons.logout))
               ]),
               body: ErrorState(
                   message: friendlyError(snapshot.error!), retry: retry));
+        }
         final p = snapshot.data!;
         if (p.role == UserRole.docente) {
-          if (p.teacherId == null)
+          if (p.teacherId == null) {
             return _MissingLink(role: 'docente', logout: logout);
+          }
           return TeacherDashboardScreen(
               profile: p, onDemoLogout: widget.onDemoLogout);
         }
         if (p.role == UserRole.estudiante) {
-          if (p.studentId == null)
+          if (p.studentId == null) {
             return _MissingLink(role: 'estudiante', logout: logout);
+          }
           return StudentPortalScreen(
               profile: p, onDemoLogout: widget.onDemoLogout);
         }

@@ -87,13 +87,15 @@ class _State extends State<UserRolesScreen> {
             studentId: studentId,
             teacherId: teacherId);
         load();
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text('Rol actualizado.')));
+        }
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        }
       }
     }
   }
@@ -104,10 +106,12 @@ class _State extends State<UserRolesScreen> {
       body: FutureBuilder<List<dynamic>>(
           future: future,
           builder: (c, s) {
-            if (s.connectionState == ConnectionState.waiting)
+            if (s.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(message: friendlyError(s.error!), retry: load);
+            }
             final profiles = s.data![0] as List<Profile>,
                 students = s.data![1] as List<Student>,
                 teachers = s.data![2] as List<Teacher>;

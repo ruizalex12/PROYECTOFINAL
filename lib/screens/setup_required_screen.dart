@@ -7,11 +7,11 @@ class SetupRequiredScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Configuración pendiente')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: const Padding(
+        padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Icon(Icons.settings_suggest_outlined, size: 64),
             SizedBox(height: 20),
             Text('Supabase todavía no está configurado.',
@@ -21,7 +21,8 @@ class SetupRequiredScreen extends StatelessWidget {
             Text('2. Completa SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY.'),
             Text('3. Ejecuta con --dart-define-from-file=config/local.json.'),
             SizedBox(height: 18),
-            Text('Para levantar la app sin backend usa config/demo.json.'),
+            Text(
+                'Completa la configuración requerida para iniciar la aplicación.'),
           ],
         ),
       ),

@@ -7,10 +7,11 @@ class TeacherService {
   final bool useSupabase;
   SupabaseClient get db => Supabase.instance.client;
   Future<List<Map<String, dynamic>>> tasks(String assignmentId) async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.tasks
           .where((x) => x['asignacion_id'] == assignmentId)
           .toList();
+    }
     return List<Map<String, dynamic>>.from(await db
         .from('tareas')
         .select()
@@ -25,10 +26,12 @@ class TeacherService {
       required String description,
       required String deadline,
       double maxScore = 100}) async {
-    if (title.trim().length < 3)
+    if (title.trim().length < 3) {
       throw ArgumentError('El título debe tener al menos 3 caracteres.');
-    if (DateTime.tryParse(deadline) == null)
+    }
+    if (DateTime.tryParse(deadline) == null) {
       throw ArgumentError('La fecha límite no es válida.');
+    }
     final values = {
       'asignacion_id': assignmentId,
       'titulo': title.trim(),
@@ -64,10 +67,11 @@ class TeacherService {
   }
 
   Future<List<Map<String, dynamic>>> submissions(String taskId) async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.submissions
           .where((x) => x['tarea_id'] == taskId)
           .toList();
+    }
     return List<Map<String, dynamic>>.from(await db
         .from('entregas_tarea')
         .select('*,estudiantes(nombres,apellidos,codigo)')
@@ -77,8 +81,9 @@ class TeacherService {
 
   Future<void> gradeSubmission(
       String id, double score, String feedback, double maxScore) async {
-    if (score < 0 || score > maxScore)
+    if (score < 0 || score > maxScore) {
       throw ArgumentError('La nota debe estar entre 0 y $maxScore.');
+    }
     if (!useSupabase) {
       final x = DemoAcademicStore.instance.submissions
           .firstWhere((e) => e['id'] == id);
@@ -92,8 +97,9 @@ class TeacherService {
 
   Future<void> openAttendance(
       String assignmentId, String title, int minutes) async {
-    if (minutes < 5 || minutes > 180)
+    if (minutes < 5 || minutes > 180) {
       throw ArgumentError('La duración debe estar entre 5 y 180 minutos.');
+    }
     final now = DateTime.now(), end = now.add(Duration(minutes: minutes));
     final row = {
       'id': 'session${now.microsecondsSinceEpoch}',
@@ -113,10 +119,11 @@ class TeacherService {
   }
 
   Future<List<CourseAssignment>> myCourses(String teacherId) async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.assignments
           .where((a) => a.teacherId == teacherId)
           .toList();
+    }
     final rows = await db
         .from('asignaciones')
         .select('*,cursos(*),materias(*),docentes(*),periodos(*)')
@@ -156,10 +163,11 @@ class TeacherService {
   }
 
   Future<List<Evaluation>> evaluations(String assignmentId) async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.evaluations
           .where((e) => e.assignmentId == assignmentId)
           .toList();
+    }
     final rows = await db
         .from('evaluaciones')
         .select()
@@ -170,8 +178,9 @@ class TeacherService {
 
   Future<void> createEvaluation(String assignmentId, String title,
       String description, String date, double weight) async {
-    if (weight <= 0 || weight > 100)
+    if (weight <= 0 || weight > 100) {
       throw ArgumentError('El porcentaje debe estar entre 1 y 100.');
+    }
     if (!useSupabase) {
       DemoAcademicStore.instance.evaluations.add(Evaluation(
           id: 'ev${DateTime.now().microsecondsSinceEpoch}',
@@ -217,8 +226,9 @@ class TeacherService {
 
   Future<void> saveGrade(
       String evaluationId, String studentId, double score) async {
-    if (score < 0 || score > 100)
+    if (score < 0 || score > 100) {
       throw ArgumentError('La nota debe estar entre 0 y 100.');
+    }
     if (!useSupabase) {
       final list = DemoAcademicStore.instance.grades;
       list.removeWhere(

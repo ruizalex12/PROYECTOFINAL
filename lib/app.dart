@@ -36,7 +36,7 @@ class ProyectoFinalApp extends StatelessWidget {
       scaffoldBackgroundColor: brightness == Brightness.light
           ? const Color(0xFFF6F7FC)
           : const Color(0xFF101218),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
           centerTitle: false),

@@ -45,17 +45,22 @@ class ErrorState extends StatelessWidget {
 
 String friendlyError(Object error) {
   final text = error.toString();
-  if (text.contains('PGRST205') || text.contains('schema cache'))
+  if (text.contains('PGRST205') || text.contains('schema cache')) {
     return 'La tabla todavía no existe en Supabase. Ejecuta las migraciones SQL 01, 02 y 03.';
-  if (text.contains('PGRST204') || text.contains('column'))
+  }
+  if (text.contains('PGRST204') || text.contains('column')) {
     return 'La base de datos no tiene todas las columnas requeridas. Ejecuta la migración SQL pendiente.';
-  if (text.contains('duplicate') || text.contains('23505'))
+  }
+  if (text.contains('duplicate') || text.contains('23505')) {
     return 'Ese registro ya existe.';
+  }
   if (text.contains('permission') ||
       text.contains('row-level security') ||
-      text.contains('42501'))
+      text.contains('42501')) {
     return 'No tienes permisos para realizar esta acción.';
-  if (text.contains('SocketException') || text.contains('ClientException'))
+  }
+  if (text.contains('SocketException') || text.contains('ClientException')) {
     return 'No se pudo conectar. Verifica tu conexión a Internet.';
+  }
   return text.replaceFirst('Exception: ', '').replaceFirst('Bad state: ', '');
 }

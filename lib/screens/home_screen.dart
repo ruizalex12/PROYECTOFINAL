@@ -49,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
                 const Text(
-                    'Esta app es una base académica. Tu trabajo es convertir RegistroDemo en una entidad real de tu proyecto.'),
+                    'Gestiona tus registros académicos de forma clara y organizada.'),
                 const SizedBox(height: 20),
                 _MenuCard(
                   icon: Icons.storage_outlined,

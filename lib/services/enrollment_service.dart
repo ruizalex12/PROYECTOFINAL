@@ -7,8 +7,9 @@ class EnrollmentService {
   final bool useSupabase;
   SupabaseClient get db => Supabase.instance.client;
   Future<List<Profile>> profiles() async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.profiles.values.toList();
+    }
     final r = await db.from('perfiles').select().order('created_at');
     return r.map<Profile>((e) => Profile.fromMap(e)).toList();
   }
@@ -59,10 +60,11 @@ class EnrollmentService {
   }
 
   Future<List<AcademicPeriod>> activePeriods() async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.periods
           .where((p) => p.isActive)
           .toList();
+    }
     final r = await db
         .from('periodos')
         .select()
@@ -79,13 +81,15 @@ class EnrollmentService {
       final s = DemoAcademicStore.instance;
       if (!s.students.any((e) => e.id == studentId) ||
           !s.courses.any((e) => e.id == courseId) ||
-          !s.periods.any((e) => e.id == periodId && e.isActive))
+          !s.periods.any((e) => e.id == periodId && e.isActive)) {
         throw StateError('Los datos seleccionados no son válidos.');
+      }
       if (s.enrollments.any((e) =>
           e.studentId == studentId &&
           e.courseId == courseId &&
-          e.periodId == periodId))
+          e.periodId == periodId)) {
         throw StateError('El estudiante ya está matriculado en este curso.');
+      }
       s.enrollments.add(Enrollment(
           id: 'en${DateTime.now().microsecondsSinceEpoch}',
           studentId: studentId,
@@ -113,8 +117,9 @@ class EnrollmentService {
       if (s.assignments.any((a) =>
           a.subjectId == subjectId &&
           a.courseId == courseId &&
-          a.periodId == periodId))
+          a.periodId == periodId)) {
         throw StateError('Este curso y materia ya tienen una asignación.');
+      }
       final t = s.teachers.firstWhere((x) => x.id == teacherId),
           c = s.courses.firstWhere((x) => x.id == courseId),
           m = s.subjects.firstWhere((x) => x.id == subjectId),

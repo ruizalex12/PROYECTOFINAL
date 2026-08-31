@@ -56,8 +56,9 @@ class AcademicService {
   };
   SupabaseClient get _client => Supabase.instance.client;
   Future<List<Map<String, dynamic>>> list(String table) async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return List<Map<String, dynamic>>.from(demoRows[table] ?? const []);
+    }
     final rows = await _client
         .from(table)
         .select()

@@ -53,9 +53,10 @@ class _RecordFormScreenState extends State<RecordFormScreen> {
       }
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('No se pudo guardar: $e')));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -92,7 +93,7 @@ class _RecordFormScreenState extends State<RecordFormScreen> {
             ),
             const SizedBox(height: 14),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(
                   labelText: 'Estado', border: OutlineInputBorder()),
               items: const [

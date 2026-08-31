@@ -35,13 +35,20 @@ class StudentService {
   Future<void> submitTask(
       {required String taskId,
       required String studentId,
-      required String comment}) async {
-    if (comment.trim().isEmpty)
-      throw ArgumentError('Escribe un comentario para la entrega.');
+      required String comment,
+      required String fileName,
+      required Uint8List fileBytes}) async {
+    if (fileBytes.isEmpty) {
+      throw ArgumentError('Selecciona un archivo para entregar.');
+    }
+    if (fileBytes.length > 10485760) {
+      throw ArgumentError('El archivo supera el límite de 10 MB.');
+    }
     final values = {
       'tarea_id': taskId,
       'estudiante_id': studentId,
       'comentario': comment.trim(),
+      'archivo_nombre': fileName,
       'entregado_en': DateTime.now().toIso8601String()
     };
     if (!useSupabase) {
@@ -56,9 +63,20 @@ class StudentService {
       }
       return;
     }
-    await db
-        .from('entregas_tarea')
-        .upsert(values, onConflict: 'tarea_id,estudiante_id');
+    final userId = db.auth.currentUser!.id;
+    final safeName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+    final path =
+        '$userId/tareas/${DateTime.now().millisecondsSinceEpoch}_$safeName';
+    await db.storage.from('documentos-estudiantes').uploadBinary(
+        path, fileBytes,
+        fileOptions: const FileOptions(upsert: false));
+    try {
+      await db.from('entregas_tarea').upsert({...values, 'archivo_ruta': path},
+          onConflict: 'tarea_id,estudiante_id');
+    } catch (_) {
+      await db.storage.from('documentos-estudiantes').remove([path]);
+      rethrow;
+    }
   }
 
   Future<List<Map<String, dynamic>>> openAttendanceSessions(
@@ -79,6 +97,14 @@ class StudentService {
         .eq('activa', true)
         .lte('abre_en', DateTime.now().toIso8601String())
         .gte('cierra_en', DateTime.now().toIso8601String()));
+  }
+
+  Future<List<Map<String, dynamic>>> openAttendanceSessionsForCourse(
+      String studentId, String assignmentId) async {
+    final sessions = await openAttendanceSessions(studentId);
+    return sessions
+        .where((x) => x['asignacion_id'].toString() == assignmentId)
+        .toList();
   }
 
   Future<List<Map<String, dynamic>>> schedule(String studentId) async {
@@ -111,11 +137,12 @@ class StudentService {
   }
 
   Future<bool> hasCheckedIn(String studentId, String assignmentId) async {
-    if (!useSupabase)
+    if (!useSupabase) {
       return DemoAcademicStore.instance.attendance.any((x) =>
           x.studentId == studentId &&
           x.assignmentId == assignmentId &&
           x.date == DateTime.now().toIso8601String().substring(0, 10));
+    }
     final row = await db
         .from('marcaciones_asistencia')
         .select('id')
@@ -130,8 +157,9 @@ class StudentService {
       {String? sessionId}) async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
     if (!useSupabase) {
-      if (await hasCheckedIn(studentId, assignmentId))
+      if (await hasCheckedIn(studentId, assignmentId)) {
         throw StateError('Ya marcaste asistencia hoy.');
+      }
       DemoAcademicStore.instance.attendance.add(Attendance(
           id: 'self${DateTime.now().microsecondsSinceEpoch}',
           assignmentId: assignmentId,
@@ -140,8 +168,9 @@ class StudentService {
           status: 'Presente'));
       return;
     }
-    if (sessionId == null)
+    if (sessionId == null) {
       throw StateError('No existe una sesión de asistencia abierta.');
+    }
     await db.from('marcaciones_asistencia').insert({
       'estudiante_id': studentId,
       'asignacion_id': assignmentId,
@@ -181,8 +210,9 @@ class StudentService {
       required String name,
       required Uint8List bytes,
       String? assignmentId}) async {
-    if (bytes.length > 10485760)
+    if (bytes.length > 10485760) {
       throw ArgumentError('El archivo supera el límite de 10 MB.');
+    }
     if (!useSupabase) {
       _demoDocuments.insert(0, {
         'id': 'doc${DateTime.now().microsecondsSinceEpoch}',

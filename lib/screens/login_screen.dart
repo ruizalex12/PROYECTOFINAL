@@ -53,14 +53,16 @@ class _LoginState extends State<LoginScreen> {
         widget.onDemoLogin?.call(role);
       }
     } on AuthException catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() => error = e.message == 'Invalid login credentials'
             ? 'Correo o contraseña incorrectos.'
             : e.message);
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(
             () => error = 'No fue posible conectar con el servicio académico.');
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -68,7 +70,6 @@ class _LoginState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final demo = !context.watch<AppConfig>().useSupabase;
     return Scaffold(
         body: Container(
       decoration: const BoxDecoration(
@@ -89,11 +90,11 @@ class _LoginState extends State<LoginScreen> {
                       child: Card(
                           child: Padding(
                               padding: const EdgeInsets.all(28),
-                              child: _content(context, demo))))))),
+                              child: _content(context))))))),
     ));
   }
 
-  Widget _content(BuildContext context, bool demo) => Form(
+  Widget _content(BuildContext context) => Form(
       key: formKey,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Center(
@@ -201,7 +202,7 @@ class _LoginState extends State<LoginScreen> {
                 color: const Color(0xFFF3F5FF),
                 borderRadius: BorderRadius.circular(12)),
             child: Text(
-                '${demo ? 'MODO DEMO · ' : ''}Acceso cargado automáticamente\n${role == 'docente' ? teacherEmail : studentEmail}\n${role == 'docente' ? teacherPassword : studentPassword}',
+                'Acceso cargado automáticamente\n${role == 'docente' ? teacherEmail : studentEmail}\n${role == 'docente' ? teacherPassword : studentPassword}',
                 textAlign: TextAlign.center,
                 style:
                     const TextStyle(fontSize: 12, color: Color(0xFF33406C)))),

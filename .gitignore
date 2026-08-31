@@ -15,3 +15,7 @@ android/key.properties
 *.jks
 *.keystore
 .env
+
+android/.gradle/
+android/local.properties
+.flutter-plugins-dependencies
