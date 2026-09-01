@@ -182,17 +182,7 @@ Completar `config/local.json`:
 }
 ```
 
-#### 6.2. Preparar la base de datos
-
-Ejecutar en SQL Editor, en este orden:
-
-1. `supabase/01_schema_y_rls.sql`
-2. `supabase/02_gestion_academica.sql`
-3. `supabase/03_roles_y_acceso.sql`
-4. `supabase/04_portal_estudiantil.sql`
-5. `supabase/05_datos_portal_estudiante.sql`
-
-#### 6.3. Crear usuarios de revisión
+#### 6.2. Crear usuarios de revisión
 
 En **Authentication > Users**:
 
@@ -206,18 +196,15 @@ Correo: docente@seminariotarija.edu
 Contraseña: Docente2026*
 ```
 
-#### 6.4. Vincular cuentas y completar funciones
+#### 6.3. Preparar toda la base de datos
 
-Después de crear las cuentas, ejecutar:
+Después de crear ambos usuarios, abrir **Supabase > SQL Editor**, copiar todo el contenido del siguiente archivo y ejecutarlo una sola vez:
 
-6. `supabase/06_cuentas_docente_estudiante.sql`
-7. `supabase/07_tareas_y_asistencia_vinculada.sql`
-8. `supabase/08_archivos_entregas.sql`
-9. `supabase/09_estudiantes_y_rendimiento.sql`
+```text
+supabase/00_base_de_datos_completa.sql
+```
 
-El script 06 vincula Authentication con los perfiles. El 07 habilita tareas, entregas y sesiones de asistencia. El 08 configura los formatos de archivos y el acceso docente a los adjuntos. El 09 incorpora estudiantes adicionales y datos verificables para el panel de rendimiento docente.
-
-#### 6.5. Ejecutar
+#### 6.4. Ejecutar
 
 ```bash
 flutter run --dart-define-from-file=config/local.json

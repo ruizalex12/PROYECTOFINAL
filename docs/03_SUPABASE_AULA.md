@@ -6,10 +6,11 @@ El docente crea UN proyecto Supabase de aula. Todos usan el mismo URL + publisha
 ## Antes de clase
 1. Crear proyecto Supabase.
 2. En Authentication, para la sesión de aula puede deshabilitarse temporalmente `Confirm email` para evitar demoras de verificación.
-3. Ejecutar `supabase/01_schema_y_rls.sql`.
-4. Copiar `config/local.example.json` a `config/local.json`.
-5. Completar URL y publishable/anon key.
-6. Probar con dos usuarios distintos y comprobar que no ven los registros del otro.
+3. Crear los usuarios de revisión indicados en el README.
+4. Ejecutar una sola vez `supabase/00_base_de_datos_completa.sql` en SQL Editor.
+5. Copiar `config/local.example.json` a `config/local.json`.
+6. Completar URL y publishable/anon key.
+7. Probar con dos usuarios distintos y comprobar que no ven los registros del otro.
 
 ## Nunca
 - No usar `service_role` dentro de Flutter.

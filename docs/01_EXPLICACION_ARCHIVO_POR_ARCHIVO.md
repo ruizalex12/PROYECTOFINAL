@@ -19,7 +19,7 @@ No intentes memorizar carpetas. Sigue el recorrido de un dato.
 - `lib/screens/records_screen.dart`: READ y navegación al formulario.
 - `lib/screens/record_form_screen.dart`: CREATE/UPDATE.
 - `lib/screens/settings_screen.dart`: prueba de SharedPreferences.
-- `supabase/01_schema_y_rls.sql`: tabla + seguridad por usuario.
+- `supabase/00_base_de_datos_completa.sql`: esquema completo, tablas, seguridad RLS, almacenamiento y datos iniciales de Supabase.
 
 ## Qué NO tocar primero
 No cambies nombres de carpetas, Gradle o AndroidManifest antes de comprobar que el proyecto corre.
