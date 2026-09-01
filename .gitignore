@@ -1,4 +1,4 @@
-# Dependencias pesadas y temporales
+# Entornos y dependencias pesadas
 node_modules/
 APK/
 build/
@@ -6,16 +6,15 @@ build/
 .idea/
 .vscode/
 
-# Archivos de prueba o basura local
+# Basura local y temporales de Gradle
+android/.gradle/
+android/local.properties
+.flutter-plugins-dependencies
 fsdfsdfsdfsd
 *.txt
 
-# Seguridad de Android y llaves
+# Seguridad: llaves y credenciales
 android/key.properties
 *.jks
 *.keystore
 .env
-
-android/.gradle/
-android/local.properties
-.flutter-plugins-dependencies

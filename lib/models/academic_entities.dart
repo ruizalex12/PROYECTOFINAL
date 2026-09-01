@@ -243,7 +243,9 @@ class StudentCourseData {
       ? 0
       : attendance
               .where((e) =>
-                  e['estado'] == 'Presente' || e['estado'] == 'Justificado')
+                  e['estado'] == 'Presente' ||
+                  e['estado'] == 'Justificado' ||
+                  e['estado'] == 'Licencia')
               .length *
           100 /
           attendance.length;

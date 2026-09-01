@@ -90,13 +90,14 @@ class StudentService {
     final courses = await myCourses(studentId),
         ids = courses.map((x) => x.id).toList();
     if (ids.isEmpty) return [];
+    final utcNow = DateTime.now().toUtc().toIso8601String();
     return List<Map<String, dynamic>>.from(await db
         .from('sesiones_asistencia')
         .select('*,asignaciones(materias(nombre),docentes(nombres,apellidos))')
         .inFilter('asignacion_id', ids)
         .eq('activa', true)
-        .lte('abre_en', DateTime.now().toIso8601String())
-        .gte('cierra_en', DateTime.now().toIso8601String()));
+        .lte('abre_en', utcNow)
+        .gte('cierra_en', utcNow));
   }
 
   Future<List<Map<String, dynamic>>> openAttendanceSessionsForCourse(
@@ -155,7 +156,11 @@ class StudentService {
 
   Future<void> checkIn(String studentId, String assignmentId,
       {String? sessionId}) async {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final today = DateTime.now()
+        .toUtc()
+        .subtract(const Duration(hours: 4))
+        .toIso8601String()
+        .substring(0, 10);
     if (!useSupabase) {
       if (await hasCheckedIn(studentId, assignmentId)) {
         throw StateError('Ya marcaste asistencia hoy.');
@@ -170,6 +175,20 @@ class StudentService {
     }
     if (sessionId == null) {
       throw StateError('No existe una sesión de asistencia abierta.');
+    }
+    final now = DateTime.now().toUtc().toIso8601String();
+    final activeSession = await db
+        .from('sesiones_asistencia')
+        .select('id')
+        .eq('id', sessionId)
+        .eq('asignacion_id', assignmentId)
+        .eq('activa', true)
+        .lte('abre_en', now)
+        .gte('cierra_en', now)
+        .maybeSingle();
+    if (activeSession == null) {
+      throw StateError(
+          'La sesión de asistencia ya cerró. Actualiza e intenta con una nueva sesión.');
     }
     await db.from('marcaciones_asistencia').insert({
       'estudiante_id': studentId,
@@ -252,6 +271,17 @@ class StudentService {
     await db.from('documentos_estudiante').delete().eq('id', doc['id']);
   }
 
+  Future<Uint8List> downloadDocument(Map<String, dynamic> doc) async {
+    if (!useSupabase) {
+      throw StateError('La descarga requiere conexión con Supabase.');
+    }
+    final path = doc['ruta']?.toString() ?? '';
+    if (path.isEmpty) {
+      throw StateError('El documento no tiene archivo asociado.');
+    }
+    return db.storage.from('documentos-estudiantes').download(path);
+  }
+
   Future<List<CourseAssignment>> myCourses(String studentId) async {
     if (!useSupabase) {
       final ens = DemoAcademicStore.instance.enrollments
@@ -277,6 +307,103 @@ class StudentService {
           rows.map<CourseAssignment>((r) => CourseAssignment.fromMap(r)));
     }
     return result;
+  }
+
+  Future<List<Map<String, dynamic>>> notifications(String studentId) async {
+    final courses = await myCourses(studentId);
+    final names = {for (final course in courses) course.id: course.subjectName};
+    final items = <Map<String, dynamic>>[];
+    if (!useSupabase) {
+      final store = DemoAcademicStore.instance;
+      for (final announcement in store.announcements) {
+        items.add({
+          'type': 'announcement',
+          'title': announcement.title,
+          'message': announcement.content,
+          'date': announcement.publishedAt,
+          'course': 'Aviso académico'
+        });
+      }
+      for (final task in store.tasks.where((t) =>
+          names.containsKey(t['asignacion_id']) &&
+          t['estado'] == 'Publicada')) {
+        items.add({
+          'type': 'task',
+          'title': 'Nueva tarea: ${task['titulo']}',
+          'message': 'Fecha límite: ${task['fecha_limite']}',
+          'date': task['fecha_limite'],
+          'course': names[task['asignacion_id']] ?? 'Materia'
+        });
+      }
+      for (final session in store.attendanceSessions.where((s) =>
+          names.containsKey(s['asignacion_id']) && s['activa'] == true)) {
+        items.add({
+          'type': 'attendance',
+          'title': 'Asistencia disponible',
+          'message': session['titulo'].toString(),
+          'date': session['cierra_en'],
+          'course': names[session['asignacion_id']] ?? 'Materia'
+        });
+      }
+    } else {
+      final ids = courses.map((course) => course.id).toList();
+      if (ids.isEmpty) return [];
+      final results = await Future.wait([
+        db
+            .from('anuncios')
+            .select('id,asignacion_id,titulo,contenido,publicado_en')
+            .inFilter('asignacion_id', ids)
+            .eq('activo', true)
+            .order('publicado_en', ascending: false),
+        db
+            .from('tareas')
+            .select(
+                'id,asignacion_id,titulo,descripcion,fecha_limite,created_at')
+            .inFilter('asignacion_id', ids)
+            .eq('estado', 'Publicada')
+            .order('created_at', ascending: false),
+        db
+            .from('sesiones_asistencia')
+            .select('id,asignacion_id,titulo,cierra_en,created_at')
+            .inFilter('asignacion_id', ids)
+            .eq('activa', true)
+            .gte('cierra_en', DateTime.now().toUtc().toIso8601String())
+            .order('created_at', ascending: false)
+      ]);
+      for (final row in results[0]) {
+        items.add({
+          'type': 'announcement',
+          'title': row['titulo'],
+          'message': row['contenido'],
+          'date': row['publicado_en'],
+          'course': names[row['asignacion_id']] ?? 'Materia'
+        });
+      }
+      for (final row in results[1]) {
+        items.add({
+          'type': 'task',
+          'title': 'Nueva tarea: ${row['titulo']}',
+          'message': 'Fecha límite: ${row['fecha_limite']}',
+          'date': row['created_at'],
+          'course': names[row['asignacion_id']] ?? 'Materia'
+        });
+      }
+      for (final row in results[2]) {
+        items.add({
+          'type': 'attendance',
+          'title': 'Asistencia disponible',
+          'message': row['titulo'],
+          'date': row['created_at'],
+          'course': names[row['asignacion_id']] ?? 'Materia'
+        });
+      }
+    }
+    items.sort((a, b) {
+      final first = DateTime.tryParse(a['date']?.toString() ?? '');
+      final second = DateTime.tryParse(b['date']?.toString() ?? '');
+      return (second ?? DateTime(0)).compareTo(first ?? DateTime(0));
+    });
+    return items;
   }
 
   Future<StudentCourseData> courseData(

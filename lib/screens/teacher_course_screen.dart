@@ -1,9 +1,16 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_config.dart';
 import '../models/academic_entities.dart';
 import '../services/teacher_service.dart';
 import '../widgets/app_states.dart';
+
+String _boliviaDate() => DateTime.now()
+    .toUtc()
+    .subtract(const Duration(hours: 4))
+    .toIso8601String()
+    .substring(0, 10);
 
 class TeacherCourseScreen extends StatefulWidget {
   const TeacherCourseScreen({super.key, required this.assignment});
@@ -18,6 +25,7 @@ class _State extends State<TeacherCourseScreen>
   late Future<List<Student>> students;
   late Future<List<Evaluation>> evaluations;
   late Future<List<Map<String, dynamic>>> taskFuture;
+  late Future<List<Announcement>> announcementFuture;
   TeacherService get service =>
       TeacherService(useSupabase: context.read<AppConfig>().useSupabase);
   @override
@@ -27,6 +35,7 @@ class _State extends State<TeacherCourseScreen>
     students = Future.value([]);
     evaluations = Future.value([]);
     taskFuture = Future.value([]);
+    announcementFuture = Future.value([]);
     WidgetsBinding.instance.addPostFrameCallback((_) => load());
   }
 
@@ -40,6 +49,7 @@ class _State extends State<TeacherCourseScreen>
         students = service.courseStudents(widget.assignment);
         evaluations = service.evaluations(widget.assignment.id);
         taskFuture = service.tasks(widget.assignment.id);
+        announcementFuture = service.announcements(widget.assignment.id);
       });
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -74,16 +84,28 @@ class _State extends State<TeacherCourseScreen>
         return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: s.data!.length,
-            itemBuilder: (_, i) => ListTile(
-                leading: CircleAvatar(child: Text('${i + 1}')),
-                title: Text(s.data![i].fullName),
-                subtitle: Text(s.data![i].code)));
+            itemBuilder: (_, i) {
+              final student = s.data![i];
+              return Card(
+                  child: ListTile(
+                      leading: CircleAvatar(child: Text('${i + 1}')),
+                      title: Text(student.fullName),
+                      subtitle: Text('${student.code} · Ver rendimiento'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => _StudentPerformanceScreen(
+                                  assignment: widget.assignment,
+                                  student: student,
+                                  service: service)))));
+            });
       });
   Widget attendanceList() => FutureBuilder<List<Student>>(
       future: students,
       builder: (_, s) {
         if (!s.hasData) return const Center(child: CircularProgressIndicator());
-        final date = DateTime.now().toIso8601String().substring(0, 10);
+        final date = _boliviaDate();
         return ListView(padding: const EdgeInsets.all(16), children: [
           Text('Asistencia · $date',
               style: Theme.of(context).textTheme.titleLarge),
@@ -329,16 +351,71 @@ class _State extends State<TeacherCourseScreen>
     }
   }
 
-  Widget announcementView() => Center(
-      child: FilledButton.icon(
-          onPressed: newAnnouncement,
-          icon: const Icon(Icons.campaign),
-          label: const Text('Publicar anuncio')));
+  Widget announcementView() => FutureBuilder<List<Announcement>>(
+      future: announcementFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return ListView(padding: const EdgeInsets.all(16), children: [
+          FilledButton.icon(
+              onPressed: newAnnouncement,
+              icon: const Icon(Icons.add),
+              label: const Text('Añadir anuncio')),
+          const SizedBox(height: 12),
+          if (snapshot.data!.isEmpty)
+            const EmptyState(
+                icon: Icons.campaign_outlined,
+                title: 'Sin anuncios creados',
+                message: 'Los anuncios publicados aparecerán aquí.'),
+          for (final announcement in snapshot.data!)
+            Card(
+                child: ListTile(
+                    leading: const CircleAvatar(
+                        child: Icon(Icons.campaign_outlined)),
+                    title: Text(announcement.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(
+                        '${announcement.content}\nPublicado: ${announcement.publishedAt}'),
+                    isThreeLine: true,
+                    trailing: IconButton(
+                        tooltip: 'Eliminar anuncio',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => deleteAnnouncement(announcement))))
+        ]);
+      });
+
+  Future<void> deleteAnnouncement(Announcement announcement) async {
+    final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+                title: const Text('Eliminar anuncio'),
+                content: Text('¿Eliminar "${announcement.title}"?'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(c, false),
+                      child: const Text('Cancelar')),
+                  FilledButton(
+                      onPressed: () => Navigator.pop(c, true),
+                      child: const Text('Eliminar'))
+                ]));
+    if (confirmed != true) return;
+    try {
+      await service.deleteAnnouncement(announcement.id);
+      load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
+    }
+  }
+
   Future<void> newEvaluation() async {
     final title = TextEditingController(),
         type = TextEditingController(),
         weight = TextEditingController();
-    final date = DateTime.now().toIso8601String().substring(0, 10);
+    final date = _boliviaDate();
     final ok = await showDialog<bool>(
         context: context,
         builder: (c) => AlertDialog(
@@ -405,13 +482,130 @@ class _State extends State<TeacherCourseScreen>
                       child: const Text('Publicar'))
                 ]));
     if (ok == true) {
-      await service.publish(widget.assignment.id, title.text, content.text);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Anuncio publicado.')));
+      try {
+        await service.publish(widget.assignment.id, title.text, content.text);
+        load();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Anuncio publicado.')));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        }
       }
     }
   }
+}
+
+class _StudentPerformanceScreen extends StatelessWidget {
+  const _StudentPerformanceScreen(
+      {required this.assignment, required this.student, required this.service});
+  final CourseAssignment assignment;
+  final Student student;
+  final TeacherService service;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+      appBar: AppBar(title: Text(student.fullName)),
+      body: FutureBuilder<Map<String, dynamic>>(
+          future: service.studentPerformance(assignment, student),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return ErrorState(
+                  message: friendlyError(snapshot.error!), retry: () {});
+            }
+            final data = snapshot.data!;
+            final average = (data['average'] as num).toDouble();
+            final attendance = (data['attendance_percent'] as num).toDouble();
+            final tasks = (data['task_percent'] as num).toDouble();
+            final taskScore = (data['task_score'] as num).toDouble();
+            return ListView(padding: const EdgeInsets.all(16), children: [
+              Card(
+                  child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(student.fullName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text('${student.code} · ${student.email}'),
+                            const SizedBox(height: 18),
+                            _Metric(
+                                label: 'Promedio ponderado',
+                                value: average,
+                                suffix: '/100'),
+                            _Metric(
+                                label: 'Asistencia',
+                                value: attendance,
+                                suffix: '%'),
+                            _Metric(
+                                label: 'Tareas entregadas',
+                                value: tasks,
+                                suffix: '%'),
+                            _Metric(
+                                label: 'Rendimiento en tareas',
+                                value: taskScore,
+                                suffix: '/100')
+                          ]))),
+              const SizedBox(height: 14),
+              _PerformanceCard(
+                  icon: Icons.assignment_turned_in_outlined,
+                  title: 'Tareas',
+                  text:
+                      '${data['tasks_submitted']} de ${data['tasks_total']} entregadas'),
+              _PerformanceCard(
+                  icon: Icons.fact_check_outlined,
+                  title: 'Asistencia',
+                  text:
+                      '${data['attendance_present']} presentes de ${data['attendance_total']} registros'),
+              _PerformanceCard(
+                  icon: Icons.grade_outlined,
+                  title: 'Evaluaciones',
+                  text:
+                      '${data['evaluations_graded']} de ${data['evaluations_total']} calificadas')
+            ]);
+          }));
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric(
+      {required this.label, required this.value, required this.suffix});
+  final String label, suffix;
+  final double value;
+  @override
+  Widget build(BuildContext context) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text(label),
+          Text('${value.toStringAsFixed(1)}$suffix',
+              style: const TextStyle(fontWeight: FontWeight.bold))
+        ]),
+        const SizedBox(height: 5),
+        LinearProgressIndicator(value: (value / 100).clamp(0, 1))
+      ]));
+}
+
+class _PerformanceCard extends StatelessWidget {
+  const _PerformanceCard(
+      {required this.icon, required this.title, required this.text});
+  final IconData icon;
+  final String title, text;
+  @override
+  Widget build(BuildContext context) => Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+          leading: CircleAvatar(child: Icon(icon)),
+          title: Text(title),
+          subtitle: Text(text)));
 }
 
 class _SubmissionsScreen extends StatefulWidget {
@@ -432,6 +626,25 @@ class _SubmissionsState extends State<_SubmissionsScreen> {
 
   void load() => setState(
       () => future = widget.service.submissions(widget.task['id'].toString()));
+  Future<void> download(Map<String, dynamic> row) async {
+    try {
+      final bytes = await widget.service.downloadSubmissionFile(row);
+      final saved = await FilePicker.saveFile(
+          dialogTitle: 'Guardar entrega',
+          fileName: row['archivo_nombre']?.toString() ?? 'entrega',
+          bytes: bytes);
+      if (mounted && saved != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Entrega guardada correctamente.')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
+    }
+  }
+
   Future<void> grade(Map<String, dynamic> row) async {
     final score = TextEditingController(text: row['nota']?.toString() ?? ''),
         feedback = TextEditingController(
@@ -509,9 +722,17 @@ class _SubmissionsState extends State<_SubmissionsScreen> {
                               '${row['archivo_nombre'] == null ? 'Sin archivo adjunto' : 'Archivo: ${row['archivo_nombre']}'}\n'
                               'Nota: ${row['nota'] ?? 'Pendiente'}'),
                           isThreeLine: true,
-                          trailing: FilledButton.tonal(
-                              onPressed: () => grade(row),
-                              child: const Text('Calificar'))));
+                          trailing:
+                              Row(mainAxisSize: MainAxisSize.min, children: [
+                            if (row['archivo_ruta'] != null)
+                              IconButton(
+                                  tooltip: 'Descargar archivo',
+                                  onPressed: () => download(row),
+                                  icon: const Icon(Icons.download_outlined)),
+                            FilledButton.tonal(
+                                onPressed: () => grade(row),
+                                child: const Text('Calificar'))
+                          ])));
                 });
           }));
 }
@@ -531,7 +752,7 @@ class _AttendanceTileState extends State<_AttendanceTile> {
       title: Text(widget.student.fullName),
       trailing: DropdownButton<String>(
           value: value,
-          items: const ['Presente', 'Ausente', 'Justificado']
+          items: const ['Presente', 'Ausente', 'Licencia']
               .map((x) => DropdownMenuItem(value: x, child: Text(x)))
               .toList(),
           onChanged: (v) async {

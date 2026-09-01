@@ -285,6 +285,7 @@ class _State extends State<StudentCourseDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
+        load();
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
       }

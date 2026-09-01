@@ -20,15 +20,42 @@ class StudentPortalScreen extends StatefulWidget {
 
 class _PortalState extends State<StudentPortalScreen> {
   int index = 0;
+  bool notificationsLoaded = false, notificationsSeen = false;
+  late Future<List<Map<String, dynamic>>> notificationFuture;
   StudentService get service =>
       StudentService(useSupabase: context.read<AppConfig>().useSupabase);
   void logout() => context.read<AppConfig>().useSupabase
       ? Supabase.instance.client.auth.signOut()
       : widget.onDemoLogout?.call();
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!notificationsLoaded) {
+      notificationsLoaded = true;
+      notificationFuture = service.notifications(widget.profile.studentId!);
+    }
+  }
+
+  Future<void> openNotifications() async {
+    setState(() {
+      notificationsSeen = true;
+      notificationFuture = service.notifications(widget.profile.studentId!);
+    });
+    final items = await notificationFuture;
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (context) => FractionallySizedBox(
+            heightFactor: .78, child: _NotificationCenter(items: items)));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final pages = [
-      _Home(widget.profile, service, (v) => setState(() => index = v)),
+      _Home(widget.profile, service, notificationFuture,
+          (v) => setState(() => index = v), openNotifications),
       _Courses(widget.profile, service),
       _Schedule(widget.profile, service),
       _Documents(widget.profile, service),
@@ -45,9 +72,16 @@ class _PortalState extends State<StudentPortalScreen> {
             ])
           ]),
           actions: [
-            IconButton(
-                onPressed: () {},
-                icon: const Badge(child: Icon(Icons.notifications_outlined)))
+            FutureBuilder<List<Map<String, dynamic>>>(
+                future: notificationFuture,
+                builder: (context, snapshot) => IconButton(
+                    tooltip: 'Novedades',
+                    onPressed: openNotifications,
+                    icon: Badge(
+                        isLabelVisible: !notificationsSeen &&
+                            (snapshot.data?.isNotEmpty ?? false),
+                        label: Text('${snapshot.data?.length ?? 0}'),
+                        child: const Icon(Icons.notifications_outlined))))
           ]),
       body: Column(children: [
         StatusBanner(demoMode: !context.watch<AppConfig>().useSupabase),
@@ -73,18 +107,23 @@ class _PortalState extends State<StudentPortalScreen> {
 }
 
 class _Home extends StatelessWidget {
-  const _Home(this.profile, this.service, this.navigate);
+  const _Home(this.profile, this.service, this.notifications, this.navigate,
+      this.openNotifications);
   final Profile profile;
   final StudentService service;
+  final Future<List<Map<String, dynamic>>> notifications;
   final ValueChanged<int> navigate;
+  final VoidCallback openNotifications;
   @override
-  Widget build(BuildContext context) => FutureBuilder<List<CourseAssignment>>(
-      future: service.myCourses(profile.studentId!),
+  Widget build(BuildContext context) => FutureBuilder<List<dynamic>>(
+      future:
+          Future.wait([service.myCourses(profile.studentId!), notifications]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final courses = snapshot.data!;
+        final courses = snapshot.data![0] as List<CourseAssignment>;
+        final notices = snapshot.data![1] as List<Map<String, dynamic>>;
         return ListView(padding: const EdgeInsets.all(20), children: [
           Container(
               padding: const EdgeInsets.all(22),
@@ -95,7 +134,7 @@ class _Home extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('¡Hola, ${profile.names}! 👋',
+                    Text('¡Hola, Carlos!',
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall
@@ -145,8 +184,86 @@ class _Home extends StatelessWidget {
                 message: 'Tus materias aparecerán después de la matrícula.'),
           for (final course in courses.take(3))
             _CourseCard(profile: profile, course: course),
+          const SizedBox(height: 18),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text('Novedades',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            TextButton(
+                onPressed: openNotifications, child: const Text('Ver todas'))
+          ]),
+          if (notices.isEmpty)
+            const Card(
+                child: ListTile(
+                    leading: Icon(Icons.notifications_none),
+                    title: Text('Sin novedades'),
+                    subtitle: Text(
+                        'Los anuncios, tareas y asistencias aparecerán aquí.'))),
+          for (final notice in notices.take(4)) _NotificationTile(notice)
         ]);
       });
+}
+
+class _NotificationCenter extends StatelessWidget {
+  const _NotificationCenter({required this.items});
+  final List<Map<String, dynamic>> items;
+  @override
+  Widget build(BuildContext context) => Column(children: [
+        Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Row(children: [
+              const Icon(Icons.notifications_active_outlined),
+              const SizedBox(width: 10),
+              Text('Novedades académicas',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold))
+            ])),
+        const Divider(height: 1),
+        Expanded(
+            child: items.isEmpty
+                ? const EmptyState(
+                    icon: Icons.notifications_none,
+                    title: 'Sin novedades',
+                    message: 'No tienes avisos pendientes.')
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: items.length,
+                    itemBuilder: (_, i) => _NotificationTile(items[i])))
+      ]);
+}
+
+class _NotificationTile extends StatelessWidget {
+  const _NotificationTile(this.item);
+  final Map<String, dynamic> item;
+  @override
+  Widget build(BuildContext context) {
+    final type = item['type']?.toString();
+    final icon = type == 'task'
+        ? Icons.assignment_outlined
+        : type == 'attendance'
+            ? Icons.how_to_reg_outlined
+            : Icons.campaign_outlined;
+    final color = type == 'task'
+        ? Colors.orange
+        : type == 'attendance'
+            ? Colors.green
+            : Theme.of(context).colorScheme.primary;
+    return Card(
+        margin: const EdgeInsets.only(bottom: 9),
+        child: ListTile(
+            leading: CircleAvatar(
+                backgroundColor: color.withValues(alpha: .14),
+                child: Icon(icon, color: color)),
+            title: Text(item['title']?.toString() ?? 'Novedad',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(
+                '${item['course'] ?? 'Materia'}\n${item['message'] ?? ''}'),
+            isThreeLine: true));
+  }
 }
 
 class _Quick extends StatelessWidget {
@@ -358,6 +475,25 @@ class _DocumentsState extends State<_Documents> {
     }
   }
 
+  Future<void> download(Map<String, dynamic> doc) async {
+    try {
+      final bytes = await widget.service.downloadDocument(doc);
+      final saved = await FilePicker.saveFile(
+          dialogTitle: 'Guardar documento',
+          fileName: doc['nombre'].toString(),
+          bytes: bytes);
+      if (mounted && saved != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Documento guardado correctamente.')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) => FutureBuilder<
           List<Map<String, dynamic>>>(
@@ -393,12 +529,20 @@ class _DocumentsState extends State<_Documents> {
                 child: ListTile(
                     leading: const CircleAvatar(child: Icon(Icons.description)),
                     title: Text(doc['nombre'].toString()),
-                    trailing: IconButton(
-                        onPressed: () async {
-                          await widget.service.deleteDocument(doc);
-                          load();
-                        },
-                        icon: const Icon(Icons.delete_outline))))
+                    onTap: () => download(doc),
+                    trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(
+                          tooltip: 'Descargar',
+                          onPressed: () => download(doc),
+                          icon: const Icon(Icons.download_outlined)),
+                      IconButton(
+                          tooltip: 'Eliminar',
+                          onPressed: () async {
+                            await widget.service.deleteDocument(doc);
+                            load();
+                          },
+                          icon: const Icon(Icons.delete_outline))
+                    ])))
         ]);
       });
 }

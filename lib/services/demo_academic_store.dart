@@ -61,7 +61,13 @@ class DemoAcademicStore {
         code: 'EST-002',
         names: 'María',
         lastNames: 'Flores',
-        email: 'maria@demo.edu')
+        email: 'maria@demo.edu'),
+    const Student(
+        id: 'e3',
+        code: 'EST-003',
+        names: 'Luis',
+        lastNames: 'Mendoza',
+        email: 'luis@demo.edu')
   ];
   final teachers = <Teacher>[
     const Teacher(
@@ -127,7 +133,7 @@ class DemoAcademicStore {
         periodName: '2026-I',
         room: 'Lab. 2',
         schedule: 'Lun y Mié 10:00',
-        studentCount: 2),
+        studentCount: 3),
     const CourseAssignment(
         id: 'a2',
         courseId: 'c2',
@@ -195,6 +201,12 @@ class DemoAcademicStore {
         periodId: 'p1',
         status: 'Inscrito'),
     const Enrollment(
+        id: 'en7',
+        studentId: 'e3',
+        courseId: 'c1',
+        periodId: 'p1',
+        status: 'Inscrito'),
+    const Enrollment(
         id: 'en3',
         studentId: 'e1',
         courseId: 'c2',
@@ -237,7 +249,11 @@ class DemoAcademicStore {
   ];
   final grades = <Grade>[
     const Grade(id: 'g1', evaluationId: 'ev1', studentId: 'e1', score: 82),
-    const Grade(id: 'g2', evaluationId: 'ev2', studentId: 'e1', score: 90)
+    const Grade(id: 'g2', evaluationId: 'ev2', studentId: 'e1', score: 90),
+    const Grade(id: 'g3', evaluationId: 'ev1', studentId: 'e2', score: 75),
+    const Grade(id: 'g4', evaluationId: 'ev2', studentId: 'e2', score: 88),
+    const Grade(id: 'g5', evaluationId: 'ev1', studentId: 'e3', score: 68),
+    const Grade(id: 'g6', evaluationId: 'ev2', studentId: 'e3', score: 79)
   ];
   final attendance = <Attendance>[
     const Attendance(
@@ -251,7 +267,31 @@ class DemoAcademicStore {
         assignmentId: 'a1',
         studentId: 'e1',
         date: '2026-08-12',
-        status: 'Justificado')
+        status: 'Justificado'),
+    const Attendance(
+        id: 'at3',
+        assignmentId: 'a1',
+        studentId: 'e2',
+        date: '2026-08-10',
+        status: 'Presente'),
+    const Attendance(
+        id: 'at4',
+        assignmentId: 'a1',
+        studentId: 'e2',
+        date: '2026-08-12',
+        status: 'Ausente'),
+    const Attendance(
+        id: 'at5',
+        assignmentId: 'a1',
+        studentId: 'e3',
+        date: '2026-08-10',
+        status: 'Presente'),
+    const Attendance(
+        id: 'at6',
+        assignmentId: 'a1',
+        studentId: 'e3',
+        date: '2026-08-12',
+        status: 'Presente')
   ];
   final announcements = <Announcement>[
     const Announcement(

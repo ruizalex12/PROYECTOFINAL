@@ -30,6 +30,8 @@ EduGestión 360 busca reunir esos procesos en una sola aplicación para que:
 ### Portal del estudiante
 
 - Inicio con resumen y accesos rápidos.
+- Sección de novedades al final del inicio con anuncios, tareas publicadas y sesiones de asistencia abiertas.
+- Campanita funcional con contador y centro de novedades académicas.
 - Consulta de materias matriculadas.
 - Visualización de docente, periodo, horario y aula.
 - Consulta de tareas publicadas y estado de entrega.
@@ -40,7 +42,7 @@ EduGestión 360 busca reunir esos procesos en una sola aplicación para que:
 - Resumen y porcentaje de asistencia.
 - Marcación de asistencia dentro de cada materia cuando el docente abre una sesión.
 - Consulta del horario semanal y anuncios.
-- Carga y eliminación de documentos personales.
+- Carga, descarga y eliminación de documentos personales.
 - Consulta y actualización del perfil.
 
 ### Portal del docente
@@ -48,15 +50,17 @@ EduGestión 360 busca reunir esos procesos en una sola aplicación para que:
 - Consulta de las materias asignadas al docente autenticado.
 - Resumen de materias y estudiantes.
 - Consulta de estudiantes matriculados por materia.
+- Detalle de rendimiento individual por estudiante con promedio ponderado, asistencia, tareas entregadas y rendimiento de tareas calificadas.
 - Apertura de sesiones temporales de asistencia.
 - Registro y corrección manual de asistencia.
 - Creación, edición y eliminación de tareas.
 - Consulta y calificación de entregas.
-- Visualización del comentario y nombre del archivo adjunto.
+- Visualización y descarga del archivo adjunto de cada entrega.
 - Registro de retroalimentación.
 - Creación de evaluaciones con fecha y ponderación.
 - Registro y actualización de notas.
-- Publicación de anuncios por materia.
+- Publicación, listado y eliminación de anuncios por materia.
+- Apertura de asistencia con fecha de Bolivia (UTC−4) y almacenamiento UTC compatible con las políticas RLS.
 
 ### Gestión académica
 
@@ -209,8 +213,9 @@ Después de crear las cuentas, ejecutar:
 6. `supabase/06_cuentas_docente_estudiante.sql`
 7. `supabase/07_tareas_y_asistencia_vinculada.sql`
 8. `supabase/08_archivos_entregas.sql`
+9. `supabase/09_estudiantes_y_rendimiento.sql`
 
-El script 06 vincula Authentication con los perfiles. El 07 habilita tareas, entregas y sesiones de asistencia. El 08 configura los formatos de archivos y el acceso docente a los adjuntos.
+El script 06 vincula Authentication con los perfiles. El 07 habilita tareas, entregas y sesiones de asistencia. El 08 configura los formatos de archivos y el acceso docente a los adjuntos. El 09 incorpora estudiantes adicionales y datos verificables para el panel de rendimiento docente.
 
 #### 6.5. Ejecutar
 
@@ -285,7 +290,7 @@ Copiarlo a la carpeta de entrega desde PowerShell:
 
 ```powershell
 New-Item -ItemType Directory -Force -Path APK
-Copy-Item build\app\outputs\flutter-apk\app-release.apk APK\EduGestion360_1.0.1_release.apk -Force
+Copy-Item build\app\outputs\flutter-apk\app-release.apk APK\EduGestion360_1.0.5_supabase_release.apk -Force
 ```
 
 Antes de entregar se recomienda instalarlo en un dispositivo Android real y comprobar acceso, materias, tareas, archivos y asistencia.
@@ -294,9 +299,9 @@ Antes de entregar se recomienda instalarlo en un dispositivo Android real y comp
 
 - Nombre: **EduGestión 360**.
 - Paquete Flutter: `proyecto_final_360`.
-- Versión: **1.0.1**.
-- Número de compilación: **2**.
-- Valor en `pubspec.yaml`: `1.0.1+2`.
+- Versión: **1.0.5**.
+- Número de compilación: **6**.
+- Valor en `pubspec.yaml`: `1.0.5+6`.
 - Plataforma principal: Android.
 
 ## 10. Limitaciones conocidas
@@ -308,7 +313,7 @@ Antes de entregar se recomienda instalarlo en un dispositivo Android real y comp
 - El estudiante solo ve matrículas con estado `Inscrito`.
 - La asistencia requiere una sesión vigente abierta por el docente.
 - Los archivos tienen un límite de 10 MB y formatos restringidos.
-- No existen notificaciones push; se utilizan anuncios y mensajes internos.
+- Las notificaciones son internas: la campanita consulta novedades al abrir la aplicación o el centro de novedades. No se envían notificaciones push con la aplicación cerrada.
 - La recuperación automática de contraseña por correo no está implementada.
 - La publicación en Play Store y la firma con keystore de producción no forman parte de esta versión.
 

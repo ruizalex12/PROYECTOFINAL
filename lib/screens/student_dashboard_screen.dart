@@ -59,7 +59,7 @@ class _State extends State<StudentDashboardScreen> {
                     return ListView(
                         padding: const EdgeInsets.all(20),
                         children: [
-                          Text('Hola, ${widget.profile.names}',
+                          Text('Hola, Carlos',
                               style: Theme.of(context)
                                   .textTheme
                                   .headlineMedium
