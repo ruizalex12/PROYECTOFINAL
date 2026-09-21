@@ -1,324 +1,491 @@
-# EduGestión 360 — Portal Académico
+# Sistema Web y Móvil de Gestión Académica
 
-EduGestión 360 es una aplicación académica multiplataforma desarrollada con Flutter para centralizar la gestión de materias, estudiantes, docentes, tareas, entregas, evaluaciones, calificaciones, asistencias, horarios, anuncios y documentos.
+## Seminario de Formación Ministerial Tarija
 
-El proyecto fue realizado como trabajo final del Diplomado en Desarrollo Web y Aplicaciones Móviles de la Universidad Autónoma Juan Misael Saracho (UAJMS), gestión 2026. Incluye interfaces diferenciadas según el rol y puede ejecutarse con Supabase o con datos locales temporales para una revisión inicial.
+Proyecto desarrollado como trabajo final del **Diplomado en Desarrollo Web y Aplicaciones Móviles** de la **Universidad Autónoma Juan Misael Saracho (UAJMS)**, gestión 2026.
 
-## 1. Problema y objetivo
+La solución tiene como propósito centralizar la información académica del Seminario de Formación Ministerial Tarija mediante una aplicación web y móvil desarrollada con Flutter y servicios backend proporcionados por Supabase.
 
-En una institución educativa, las notas, asistencias, tareas, horarios y comunicaciones suelen administrarse con herramientas separadas. Esto dificulta el seguimiento académico y aumenta el riesgo de duplicar, perder o registrar incorrectamente la información.
+El sistema contempla tres perfiles de usuario:
 
-EduGestión 360 busca reunir esos procesos en una sola aplicación para que:
+- Administrador
+- Docente
+- Estudiante
 
-- el personal académico gestione la estructura general de la institución;
-- los docentes administren únicamente sus materias asignadas;
-- los estudiantes consulten sus materias, tareas, notas, asistencias y documentos;
-- los datos permanezcan protegidos mediante autenticación, roles y políticas de acceso.
+Cada perfil dispone de funcionalidades y permisos diferenciados de acuerdo con sus responsabilidades dentro del proceso académico.
 
-## 2. Funcionalidades implementadas
+---
 
-### Acceso y seguridad
+## 1. Problema
 
-- Inicio y cierre de sesión.
-- Acceso diferenciado para estudiante y docente.
-- Redirección automática al portal correspondiente al rol.
-- Autenticación mediante Supabase Auth.
-- Protección de datos mediante Row Level Security (RLS).
-- Restricción de la información por estudiante y por asignación docente.
-- Almacenamiento privado de documentos en Supabase Storage.
+Actualmente, parte de la gestión académica del Seminario de Formación Ministerial Tarija se realiza mediante registros físicos, hojas de cálculo y un programa de funcionamiento local.
 
-### Portal del estudiante
+Esta forma de trabajo puede generar:
 
-- Inicio con resumen y accesos rápidos.
-- Sección de novedades al final del inicio con anuncios, tareas publicadas y sesiones de asistencia abiertas.
-- Campanita funcional con contador y centro de novedades académicas.
-- Consulta de materias matriculadas.
-- Visualización de docente, periodo, horario y aula.
-- Consulta de tareas publicadas y estado de entrega.
-- Entrega de tareas con comentario opcional y archivo real.
-- Archivos de tarea admitidos: TXT, PDF, Word, JPG y PNG.
-- Límite máximo de 10 MB por archivo.
-- Consulta de calificaciones y cálculo del promedio.
-- Resumen y porcentaje de asistencia.
-- Marcación de asistencia dentro de cada materia cuando el docente abre una sesión.
-- Consulta del horario semanal y anuncios.
-- Carga, descarga y eliminación de documentos personales.
-- Consulta y actualización del perfil.
+- duplicidad de información;
+- errores durante la transcripción de datos;
+- riesgo de inconsistencias;
+- demoras en la actualización de información;
+- dependencia del administrador para realizar consultas;
+- acceso limitado a la información académica.
 
-### Portal del docente
+El proyecto busca centralizar estos procesos mediante una solución web y móvil.
 
-- Consulta de las materias asignadas al docente autenticado.
-- Resumen de materias y estudiantes.
-- Consulta de estudiantes matriculados por materia.
-- Detalle de rendimiento individual por estudiante con promedio ponderado, asistencia, tareas entregadas y rendimiento de tareas calificadas.
-- Apertura de sesiones temporales de asistencia.
-- Registro y corrección manual de asistencia.
-- Creación, edición y eliminación de tareas.
-- Consulta y calificación de entregas.
-- Visualización y descarga del archivo adjunto de cada entrega.
-- Registro de retroalimentación.
-- Creación de evaluaciones con fecha y ponderación.
-- Registro y actualización de notas.
-- Publicación, listado y eliminación de anuncios por materia.
-- Apertura de asistencia con fecha de Bolivia (UTC−4) y almacenamiento UTC compatible con las políticas RLS.
+---
 
-### Gestión académica
+## 2. Objetivo
 
-- Panel con indicadores generales.
-- Gestión de estudiantes, docentes, cursos, materias y periodos.
-- Asignación de docentes y materias a cursos.
-- Matrícula de estudiantes.
-- Administración de roles.
-- Creación, edición y eliminación de registros.
-- Reportes y consultas académicas.
-- Preferencias locales y tema oscuro.
+Desarrollar un sistema web y móvil de gestión académica para el Seminario de Formación Ministerial Tarija que centralice la información académica y proporcione funcionalidades diferenciadas para administrador, docentes y estudiantes.
 
-### Ejecución local
+---
 
-La aplicación incluye datos académicos temporales en memoria para facilitar su revisión sin configurar Supabase. En esta modalidad se pueden recorrer los portales y probar los principales flujos, pero los cambios se pierden al reiniciar la aplicación.
+## 3. Alcance funcional
 
-## 3. Tecnologías utilizadas
+El sistema se centra exclusivamente en procesos de **gestión académica**.
 
-| Tecnología            |                 Uso                         |
-|     --                |                 ---                         |
-| Flutter               |  Interfaz y compilación multiplataforma.    |
-| Dart                  | Lenguaje principal.                         |
-| Material 3            | Componentes visuales, temas y navegación.   |
-| Supabase Auth         | Autenticación de usuarios.                  |
-| Supabase PostgreSQL   | Persistencia académica.                     |
-| Supabase RLS          | Seguridad según usuario y rol.              |
-| Supabase Storage      | Documentos y archivos de entregas.          |
-| Provider              | Estado global e inyección de configuración. |
-| SharedPreferences     | Preferencias locales.                       |
-| File Picker           | Selección de archivos del dispositivo.      |
-| Flutter Test          | Pruebas automatizadas.                      |
+### Administrador
 
-El proyecto requiere Dart `>=3.4.0 <4.0.0`.
+El administrador podrá gestionar:
 
-## 4. Requisitos
+- cuentas y perfiles de usuario;
+- estudiantes;
+- docentes;
+- asignaturas;
+- periodos académicos;
+- inscripciones;
+- asignaciones docentes;
+- asistencia;
+- calificaciones;
+- consultas y reportes académicos.
 
-### Requisitos generales
+### Docente
+
+El docente podrá:
+
+- iniciar sesión;
+- consultar sus asignaturas asignadas;
+- consultar estudiantes relacionados con sus asignaturas;
+- consultar información de asistencia;
+- consultar calificaciones;
+- acceder únicamente a la información académica autorizada.
+
+### Estudiante
+
+El estudiante podrá:
+
+- iniciar sesión;
+- consultar sus asignaturas;
+- consultar su asistencia;
+- consultar sus calificaciones;
+- acceder únicamente a su propia información académica.
+
+---
+
+## 4. Funcionalidades principales
+
+- Autenticación de usuarios.
+- Gestión de perfiles y roles.
+- Gestión de estudiantes.
+- Gestión de docentes.
+- Gestión de asignaturas.
+- Gestión de periodos académicos.
+- Inscripción de estudiantes.
+- Asignación de docentes a asignaturas.
+- Registro y consulta de asistencia.
+- Registro y consulta de calificaciones.
+- Consultas académicas según el perfil.
+- Reportes académicos.
+- Control de acceso según usuario y rol.
+
+---
+
+## 5. Funcionalidades fuera de alcance
+
+La versión correspondiente al presente proyecto no contempla:
+
+- aula virtual o LMS;
+- entrega de tareas;
+- gestión de archivos académicos;
+- videoclases;
+- foros;
+- mensajería interna;
+- gestión económica o financiera;
+- pagos y facturación;
+- biblioteca;
+- gestión médica o psicológica;
+- comunicación con familiares;
+- auditoría avanzada de modificaciones.
+
+Estas funcionalidades podrán ser consideradas en futuras versiones si la institución las requiere.
+
+---
+
+## 6. Arquitectura
+
+El sistema utiliza una arquitectura **cliente-servidor apoyada en servicios Backend as a Service (BaaS)**.
+
+Las aplicaciones desarrolladas con Flutter funcionan como clientes web y móvil, mientras que Supabase proporciona los servicios principales del backend.
+
+Arquitectura general:
+
+```text
+Flutter Web
+      │
+      │ HTTPS / JSON
+      ▼
+   Supabase
+      │
+      ├── Supabase Auth
+      ├── Data API / PostgREST
+      ├── Edge Functions
+      ├── Row Level Security
+      │
+      ▼
+ PostgreSQL
+      ▲
+      │
+      │ HTTPS / JSON
+      │
+Flutter Android
+```
+
+Las aplicaciones web y móvil utilizan una misma fuente centralizada de información.
+
+---
+
+## 7. Tecnologías utilizadas
+
+| Tecnología | Uso |
+|---|---|
+| Flutter SDK 3.47.0 Stable | Desarrollo de las aplicaciones web y Android |
+| Dart SDK 3.13 | Lenguaje principal de desarrollo |
+| Material 3 | Diseño de interfaces y componentes visuales |
+| Supabase | Backend administrado |
+| Supabase Auth | Autenticación y sesiones |
+| supabase_flutter 2.17.2 | Integración entre Flutter y Supabase |
+| Data API / PostgREST | Acceso a los datos mediante API REST |
+| PostgreSQL | Persistencia de información académica |
+| Row Level Security (RLS) | Restricción de acceso a datos |
+| Supabase Edge Functions | Operaciones administrativas con privilegios elevados |
+| Git 2.54.0.windows.1 | Control de versiones |
+| GitHub | Repositorio remoto y respaldo del proyecto |
+
+---
+
+## 8. Modelo de datos
+
+El modelo académico principal está compuesto por las siguientes entidades:
+
+```text
+perfil_usuario
+asignatura
+periodo_academico
+inscripcion
+asignacion_docente
+asistencia
+calificacion
+```
+
+La autenticación de las cuentas es administrada mediante:
+
+```text
+auth.users
+```
+
+de Supabase Auth.
+
+### Relaciones principales
+
+- Un estudiante puede tener varias inscripciones.
+- Un docente puede tener varias asignaciones académicas.
+- Una asignatura puede tener varios estudiantes inscritos.
+- Una asignatura puede estar asignada a docentes.
+- Un periodo académico puede contener múltiples inscripciones y asignaciones.
+- Una inscripción puede tener registros de asistencia.
+- Una inscripción puede tener registros de calificaciones.
+
+---
+
+## 9. Seguridad
+
+La seguridad del sistema se basa en:
+
+- autenticación mediante Supabase Auth;
+- sesiones mediante JWT;
+- perfiles diferenciados;
+- políticas Row Level Security (RLS);
+- restricción de información según el usuario autenticado;
+- operaciones administrativas protegidas mediante Supabase Edge Functions;
+- ausencia de claves privilegiadas dentro del código cliente.
+
+### Reglas principales de acceso
+
+**Administrador**
+
+Puede gestionar la información académica autorizada.
+
+**Docente**
+
+Solo puede acceder a la información correspondiente a sus asignaciones académicas.
+
+**Estudiante**
+
+Solo puede consultar la información asociada a su propio perfil.
+
+> Nunca se debe incluir una clave `service_role` de Supabase dentro de la aplicación Flutter ni publicarla en el repositorio.
+
+---
+
+## 10. Requisitos para ejecutar el proyecto
+
+Se requiere:
 
 - Git.
-- Flutter SDK compatible con Dart 3.4 o superior.
-- Android Studio o Visual Studio Code con Flutter y Dart.
+- Flutter SDK.
+- Dart SDK.
+- Android Studio o Visual Studio Code.
 - Android SDK.
-- Emulador Android o dispositivo con depuración USB.
-- Internet para descargar dependencias y utilizar Supabase.
+- Navegador web compatible.
+- Emulador Android o dispositivo físico.
+- Cuenta y proyecto de Supabase.
+- Conexión a Internet.
 
-Verificar el entorno:
+Verificar Flutter:
 
 ```bash
 flutter doctor
 ```
 
-### Requisitos para Supabase
-
-- Cuenta y proyecto de Supabase.
-- URL y publishable key del proyecto.
-- Acceso a SQL Editor y Authentication.
-
-> Nunca se debe colocar una clave `service_role` dentro de Flutter.
-
-## 5. Instalación
-
-Clonar el repositorio y entrar en la carpeta:
+Verificar Git:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
-cd PROYECTO_FINAL_360_BASE
+git --version
 ```
 
-Si se recibió un ZIP, descomprimirlo y abrir una terminal en la carpeta donde está `pubspec.yaml`.
+---
 
-Instalar dependencias:
+## 11. Instalación
+
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/ruizalex12/PROYECTOFINAL.git
+```
+
+Ingresar al proyecto:
+
+```bash
+cd PROYECTOFINAL
+```
+
+Instalar las dependencias:
 
 ```bash
 flutter pub get
 ```
 
-Comprobar el proyecto:
+Analizar el proyecto:
 
 ```bash
 flutter analyze
+```
+
+Ejecutar las pruebas:
+
+```bash
 flutter test
 ```
 
-El análisis debe finalizar sin problemas y las pruebas deben indicar `All tests passed`.
+---
 
-## 6. Configuración y ejecución
+## 12. Configuración de Supabase
 
-### Opción A: revisión local sin configurar Supabase
+Para utilizar la aplicación con Supabase se requiere:
 
-```bash
-flutter run --dart-define-from-file=config/demo.json
-```
+- URL del proyecto;
+- clave pública o publishable key;
+- Supabase Authentication habilitado;
+- base de datos PostgreSQL configurada;
+- políticas RLS correspondientes.
 
-Seleccionar estudiante o docente en el acceso. Las credenciales de revisión se cargan automáticamente.
+Las credenciales privadas no deben almacenarse directamente en el repositorio.
 
-### Opción B: ejecución con Supabase
-
-#### 6.1. Crear la configuración local
-
-En PowerShell:
-
-```powershell
-Copy-Item config\local.example.json config\local.json
-```
-
-En Linux o macOS:
-
-```bash
-cp config/local.example.json config/local.json
-```
-
-Completar `config/local.json`:
+Ejemplo de configuración:
 
 ```json
 {
   "DEMO_MODE": "false",
-  "SUPABASE_URL": "https://SU-PROYECTO.supabase.co",
-  "SUPABASE_PUBLISHABLE_KEY": "SU_CLAVE_PUBLICA"
+  "SUPABASE_URL": "https://TU-PROYECTO.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "TU_CLAVE_PUBLICA"
 }
 ```
 
-#### 6.2. Crear usuarios de revisión
+La clave mostrada en la documentación debe ser únicamente un ejemplo y nunca una credencial privada real.
 
-En **Authentication > Users**:
+---
 
-```text
-Estudiante
-Correo: estudiante@seminariotarija.edu
-Contraseña: Estudiante2026*
+## 13. Ejecución
 
-Docente
-Correo: docente@seminariotarija.edu
-Contraseña: Docente2026*
-```
-
-#### 6.3. Preparar toda la base de datos
-
-Después de crear ambos usuarios, abrir **Supabase > SQL Editor**, copiar todo el contenido del siguiente archivo y ejecutarlo una sola vez:
-
-```text
-supabase/00_base_de_datos_completa.sql
-```
-
-#### 6.4. Ejecutar
+### Aplicación conectada a Supabase
 
 ```bash
 flutter run --dart-define-from-file=config/local.json
 ```
 
-## 7. Estructura general
+### Aplicación web
 
-```text
-PROYECTO_FINAL_360_BASE/
-├── android/                 Proyecto nativo de Android
-├── APK/                     APK preparado para entrega
-├── config/                  Archivos de configuración dart-define
-├── docs/                    Documentación complementaria
-├── lib/
-│   ├── config/              Configuración general
-│   ├── controllers/         Controladores y preferencias
-│   ├── models/              Entidades académicas
-│   ├── repositories/        Repositorios locales y Supabase
-│   ├── screens/             Pantallas y portales
-│   ├── services/            Lógica académica, autenticación y archivos
-│   ├── widgets/             Componentes reutilizables
-│   ├── app.dart             MaterialApp y tema
-│   └── main.dart            Punto de entrada
-├── supabase/                SQL, RLS y datos iniciales
-├── test/                    Pruebas automatizadas
-├── web/                     Configuración web
-├── windows/                 Configuración Windows
-├── pubspec.yaml             Versión y dependencias
-└── README.md                Documentación principal
+```bash
+flutter run -d chrome --dart-define-from-file=config/local.json
 ```
 
-### Organización interna
+### Aplicación Android
 
-- Las pantallas consumen servicios especializados.
-- `StudentService` gestiona las operaciones del estudiante.
-- `TeacherService` gestiona materias, tareas, asistencia y notas.
-- `EnrollmentService` gestiona matrículas y asignaciones.
-- `AcademicService` administra registros generales.
-- `ProfileService` obtiene el perfil y rol.
-- `DemoAcademicStore` proporciona información temporal local.
-- Supabase aplica la persistencia y las restricciones mediante RLS.
+Con un dispositivo o emulador disponible:
 
-## 8. Generación del APK
+```bash
+flutter run --dart-define-from-file=config/local.json
+```
 
-### APK conectado a Supabase
+---
+
+## 14. Estructura general del proyecto
+
+```text
+PROYECTOFINAL/
+├── android/
+├── config/
+├── docs/
+├── lib/
+│   ├── config/
+│   ├── controllers/
+│   ├── models/
+│   ├── repositories/
+│   ├── screens/
+│   ├── services/
+│   ├── widgets/
+│   ├── app.dart
+│   └── main.dart
+├── supabase/
+├── test/
+├── web/
+├── .gitignore
+├── analysis_options.yaml
+├── pubspec.lock
+├── pubspec.yaml
+└── README.md
+```
+
+La estructura mantiene separadas las responsabilidades principales de la aplicación.
+
+- `models`: representación de las entidades.
+- `repositories`: acceso y persistencia de información.
+- `services`: lógica de autenticación y gestión académica.
+- `screens`: interfaces de usuario.
+- `widgets`: componentes reutilizables.
+- `supabase`: scripts SQL y configuración relacionada con la base de datos.
+- `test`: pruebas automatizadas.
+- `docs`: documentación complementaria.
+
+---
+
+## 15. Generación del APK
+
+Antes de generar el APK:
 
 ```bash
 flutter clean
 flutter pub get
 flutter analyze
 flutter test
+```
+
+Generar la versión release:
+
+```bash
 flutter build apk --release --dart-define-from-file=config/local.json
 ```
 
-### APK para revisión local
-
-```bash
-flutter clean
-flutter pub get
-flutter build apk --release --dart-define-from-file=config/demo.json
-```
-
-El APK se genera en:
+El archivo generado estará disponible normalmente en:
 
 ```text
 build/app/outputs/flutter-apk/app-release.apk
 ```
 
-Copiarlo a la carpeta de entrega desde PowerShell:
+Antes de la entrega final se deberá probar el APK en un dispositivo Android.
 
-```powershell
-New-Item -ItemType Directory -Force -Path APK
-Copy-Item build\app\outputs\flutter-apk\app-release.apk APK\EduGestion360_1.0.5_supabase_release.apk -Force
-```
+---
 
-Antes de entregar se recomienda instalarlo en un dispositivo Android real y comprobar acceso, materias, tareas, archivos y asistencia.
+## 16. Despliegue web
 
-## 9. Versión entregada
+La aplicación web será publicada mediante una plataforma de hosting compatible con Flutter Web.
 
-- Nombre: **EduGestión 360**.
-- Paquete Flutter: `proyecto_final_360`.
-- Versión: **1.0.5**.
-- Número de compilación: **6**.
-- Valor en `pubspec.yaml`: `1.0.5+6`.
-- Plataforma principal: Android.
+La plataforma definitiva será determinada durante la etapa de despliegue del proyecto.
 
-## 10. Limitaciones conocidas
-
-- Supabase requiere conexión a Internet.
-- Los datos locales en memoria se pierden al reiniciar.
-- Los usuarios Auth deben crearse antes de ejecutar el script 06.
-- El docente solo ve materias vinculadas mediante `docente_id`.
-- El estudiante solo ve matrículas con estado `Inscrito`.
-- La asistencia requiere una sesión vigente abierta por el docente.
-- Los archivos tienen un límite de 10 MB y formatos restringidos.
-- Las notificaciones son internas: la campanita consulta novedades al abrir la aplicación o el centro de novedades. No se envían notificaciones push con la aplicación cerrada.
-- La recuperación automática de contraseña por correo no está implementada.
-- La publicación en Play Store y la firma con keystore de producción no forman parte de esta versión.
-
-## 11. Autor
-
-- **Autor:** Alexander Ruiz Guerrero.
-- **Correo:** ruizguerrero02@gmail.com.
-- **Programa:** Diplomado en Desarrollo Web y Aplicaciones Móviles.
-- **Institución:** Universidad Autónoma Juan Misael Saracho (UAJMS).
-- **Gestión:** 2026.
-
-## 12. Comandos útiles
+Para generar la versión web:
 
 ```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter run --dart-define-from-file=config/demo.json
-flutter run --dart-define-from-file=config/local.json
-flutter build apk --release --dart-define-from-file=config/local.json
+flutter build web --release --dart-define-from-file=config/local.json
 ```
+
+Los archivos de publicación se generarán en:
+
+```text
+build/web/
+```
+
+---
+
+## 17. Control de versiones
+
+El proyecto utiliza **Git** para registrar los cambios realizados durante las diferentes iteraciones de desarrollo.
+
+El repositorio remoto se encuentra alojado en GitHub:
+
+```text
+https://github.com/ruizalex12/PROYECTOFINAL
+```
+
+El historial existente del repositorio se mantiene como evidencia de la evolución del proyecto.
+
+---
+
+## 18. Limitaciones
+
+- El funcionamiento conectado a Supabase requiere acceso a Internet.
+- La disponibilidad depende también de los servicios externos utilizados.
+- La versión actual se limita a procesos de gestión académica.
+- No se incluye un entorno de aula virtual.
+- No se incluyen pagos ni procesos financieros.
+- No se incluyen tareas, entregas de archivos, mensajería o biblioteca.
+- La publicación en Google Play Store no forma parte del alcance actual.
+- El hosting web definitivo será seleccionado durante la etapa de despliegue.
+
+---
+
+## 19. Autor
+
+**Alexander Ruiz Guerrero**
+
+Diplomado en Desarrollo Web y Aplicaciones Móviles  
+Universidad Autónoma Juan Misael Saracho — UAJMS  
+Gestión 2026
+
+---
+
+## 20. Proyecto académico
+
+**Título:**
+
+> Desarrollo de un Sistema Web y Móvil de Gestión Académica para el Seminario de Formación Ministerial Tarija
+
+**Ámbito beneficiario:**
+
+Seminario de Formación Ministerial Tarija.
+
+**Tipo de solución:**
+
+Web + móvil.
+
+**Gestión:**
+
+2026.
