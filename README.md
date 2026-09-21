@@ -415,19 +415,37 @@ Antes de la entrega final se deberá probar el APK en un dispositivo Android.
 
 ---
 
-## 16. Despliegue web
+## 16. Despliegue web en Vercel
 
-La aplicación web será publicada mediante una plataforma de hosting compatible con Flutter Web.
+El repositorio incluye `vercel.json` y `vercel-build.sh` para compilar y publicar Flutter Web automáticamente en Vercel.
 
-La plataforma definitiva será determinada durante la etapa de despliegue del proyecto.
+### Configuración en Vercel
 
-Para generar la versión web:
+1. Importar en Vercel el repositorio `ruizalex12/PROYECTOFINAL`.
+2. Mantener el directorio raíz del proyecto (`./`).
+3. En **Settings > Environment Variables**, registrar las siguientes variables para Production, Preview y Development:
+
+| Variable | Valor |
+|---|---|
+| `DEMO_MODE` | `false` |
+| `SUPABASE_URL` | URL pública del proyecto Supabase |
+| `SUPABASE_PUBLISHABLE_KEY` | Clave pública o publishable key de Supabase |
+
+4. Presionar **Deploy**. Vercel ejecutará el script de compilación y publicará el contenido de `build/web`.
+
+La configuración también redirige las rutas de la aplicación hacia `index.html`, lo que permite abrir y recargar rutas internas de Flutter Web sin obtener un error 404.
+
+> Las variables definidas mediante `--dart-define` quedan incorporadas en la aplicación web compilada. Se debe utilizar únicamente la clave pública de Supabase, protegida con políticas RLS. Nunca se debe utilizar `service_role`.
+
+### Compilación local
+
+Para generar la versión web localmente:
 
 ```bash
 flutter build web --release --dart-define-from-file=config/local.json
 ```
 
-Los archivos de publicación se generarán en:
+Los archivos de publicación se generan en:
 
 ```text
 build/web/

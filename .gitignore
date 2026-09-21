@@ -2,6 +2,8 @@
 node_modules/
 APK/
 build/
+.vercel/
+.vercel_flutter/
 .dart_tool/
 .idea/
 .vscode/
