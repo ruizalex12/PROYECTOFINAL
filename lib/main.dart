@@ -4,38 +4,47 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
-import 'config/app_config.dart';
-import 'controllers/preferences_controller.dart';
-import 'repositories/demo_registro_repository.dart';
-import 'repositories/registro_repository.dart';
-import 'repositories/supabase_registro_repository.dart';
-import 'services/preferences_service.dart';
+import 'core/config/app_config.dart';
+import 'core/services/preferences_service.dart';
+import 'core/theme/theme_controller.dart';
+import 'features/asignaturas/data/datasources/asignatura_remote_datasource.dart';
+import 'features/asignaturas/data/repositories/asignatura_repository_impl.dart';
+import 'features/asignaturas/domain/repositories/asignatura_repository.dart';
+import 'features/auth/data/auth_remote_datasource.dart';
+import 'features/auth/data/auth_repository_impl.dart';
+import 'features/auth/presentation/controllers/auth_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final config = AppConfig.fromEnvironment();
-  final sharedPreferences = await SharedPreferences.getInstance();
-  final preferencesService = PreferencesService(sharedPreferences);
-  final preferencesController = PreferencesController(preferencesService);
-
-  RegistroRepository repository = DemoRegistroRepository();
-
-  if (config.useSupabase) {
-    await Supabase.initialize(
-      url: config.supabaseUrl,
-      publishableKey: config.supabaseKey,
-    );
-    repository = SupabaseRegistroRepository(Supabase.instance.client);
+  if (!config.isComplete) {
+    runApp(const SetupRequiredApp());
+    return;
   }
+
+  await Supabase.initialize(
+    url: config.supabaseUrl,
+    publishableKey: config.supabasePublishableKey,
+  );
+
+  final preferences = await SharedPreferences.getInstance();
+  final client = Supabase.instance.client;
+  final authRepository = AuthRepositoryImpl(AuthRemoteDatasource(client));
+  final asignaturaRepository =
+      AsignaturaRepositoryImpl(AsignaturaRemoteDatasource(client));
 
   runApp(
     MultiProvider(
       providers: [
         Provider<AppConfig>.value(value: config),
-        ChangeNotifierProvider<PreferencesController>.value(
-            value: preferencesController),
-        Provider<RegistroRepository>.value(value: repository),
+        ChangeNotifierProvider(
+          create: (_) => ThemeController(PreferencesService(preferences)),
+        ),
+        Provider<AsignaturaRepository>.value(value: asignaturaRepository),
+        ChangeNotifierProvider(
+          create: (_) => AuthController(authRepository),
+        ),
       ],
       child: const ProyectoFinalApp(),
     ),

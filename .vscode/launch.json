@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SFM - SUPABASE WEB",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "cwd": "${workspaceFolder}",
+      "toolArgs": [
+        "--dart-define-from-file",
+        "config/local.json"
+      ]
+    },
+    {
+      "name": "SFM - SUPABASE ANDROID",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}",
+      "toolArgs": [
+        "--dart-define-from-file",
+        "config/local.json"
+      ]
+    }
+  ]
+}

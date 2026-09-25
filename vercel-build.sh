@@ -11,14 +11,12 @@ if ! command -v flutter >/dev/null 2>&1; then
   export PATH="${FLUTTER_DIR}/bin:${PATH}"
 fi
 
-: "${DEMO_MODE:=false}"
 : "${SUPABASE_URL:?Configura SUPABASE_URL en Vercel}"
 : "${SUPABASE_PUBLISHABLE_KEY:?Configura SUPABASE_PUBLISHABLE_KEY en Vercel}"
 
 flutter config --enable-web
 flutter pub get
-flutter build web --release \
+flutter build web --release --no-web-resources-cdn \
   --base-href=/ \
-  --dart-define="DEMO_MODE=${DEMO_MODE}" \
   --dart-define="SUPABASE_URL=${SUPABASE_URL}" \
   --dart-define="SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY}"
