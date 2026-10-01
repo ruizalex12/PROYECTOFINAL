@@ -120,23 +120,35 @@ class DocenteDashboardPage extends StatelessWidget {
                         _DashboardCard(
                           width: width,
                           title: 'Mis asignaturas',
-                          subtitle: 'Próximamente',
+                          subtitle: 'Ver asignaciones activas',
                           icon: Icons.menu_book_outlined,
                           color: AppColors.primary,
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            RouteNames.docenteAsignaturas,
+                          ),
                         ),
                         _DashboardCard(
                           width: width,
                           title: 'Asistencia',
-                          subtitle: 'Próximamente',
+                          subtitle: 'Registrar por asignatura',
                           icon: Icons.fact_check_outlined,
                           color: const Color(0xFF2878B8),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            RouteNames.docenteAsignaturas,
+                          ),
                         ),
                         _DashboardCard(
                           width: width,
                           title: 'Calificaciones',
-                          subtitle: 'Próximamente',
+                          subtitle: 'Registrar por asignatura',
                           icon: Icons.grading_outlined,
                           color: AppColors.secondary,
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            RouteNames.docenteAsignaturas,
+                          ),
                         ),
                       ],
                     );
@@ -156,7 +168,7 @@ class DocenteDashboardPage extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Los módulos docentes se habilitarán progresivamente.',
+                            'Seleccione una asignatura para consultar estudiantes, registrar asistencia o calificaciones.',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -183,6 +195,7 @@ class _DashboardCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 
   final double width;
@@ -190,45 +203,50 @@ class _DashboardCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => SizedBox(
         width: width,
         child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: .1),
-                    borderRadius: BorderRadius.circular(13),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(18),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: .1),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Icon(icon, color: color),
                   ),
-                  child: Icon(icon, color: color),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: AppColors.muted,
-                          fontSize: 13,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 5),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

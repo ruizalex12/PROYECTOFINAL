@@ -6,9 +6,37 @@ import '../../../routes/route_names.dart';
 import '../../../shared/layouts/admin_shell.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
+import '../../estudiantes/domain/repositories/estudiante_repository.dart';
+import '../../periodos/domain/entities/periodo_academico.dart';
+import '../../periodos/domain/repositories/periodo_academico_repository.dart';
 
-class AdminDashboardPage extends StatelessWidget {
+class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
+
+  @override
+  State<AdminDashboardPage> createState() => _AdminDashboardPageState();
+}
+
+class _AdminDashboardPageState extends State<AdminDashboardPage> {
+  EstudianteRepository? _estudianteRepository;
+  Future<int>? _estudiantesActivos;
+  PeriodoAcademicoRepository? _periodoRepository;
+  Future<List<PeriodoAcademico>>? _periodosActivos;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final repository = context.read<EstudianteRepository>();
+    if (!identical(repository, _estudianteRepository)) {
+      _estudianteRepository = repository;
+      _estudiantesActivos = repository.contarActivos();
+    }
+    final periodoRepository = context.read<PeriodoAcademicoRepository>();
+    if (!identical(periodoRepository, _periodoRepository)) {
+      _periodoRepository = periodoRepository;
+      _periodosActivos = periodoRepository.listarActivos();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +72,20 @@ class AdminDashboardPage extends StatelessWidget {
                       spacing: 16,
                       runSpacing: 16,
                       children: [
-                        _SummaryCard(
+                        FutureBuilder<int>(
+                          future: _estudiantesActivos,
+                          builder: (context, snapshot) => _SummaryCard(
                             width: width,
-                            label: 'Estudiantes',
-                            value: '—',
+                            label: 'Estudiantes activos',
+                            value: snapshot.hasData ? '${snapshot.data}' : '—',
                             icon: Icons.school_outlined,
-                            color: const Color(0xFF2878B8)),
+                            color: const Color(0xFF2878B8),
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              RouteNames.adminEstudiantes,
+                            ),
+                          ),
+                        ),
                         _SummaryCard(
                             width: width,
                             label: 'Docentes',
@@ -64,12 +100,20 @@ class AdminDashboardPage extends StatelessWidget {
                             color: AppColors.primary,
                             onTap: () => Navigator.pushNamed(
                                 context, RouteNames.adminAsignaturas)),
-                        _SummaryCard(
+                        FutureBuilder<List<PeriodoAcademico>>(
+                          future: _periodosActivos,
+                          builder: (context, snapshot) => _SummaryCard(
                             width: width,
                             label: 'Periodo académico',
-                            value: 'Sin configurar',
+                            value: _periodoValue(snapshot.data),
                             icon: Icons.calendar_month_outlined,
-                            color: AppColors.secondary),
+                            color: AppColors.secondary,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              RouteNames.adminPeriodos,
+                            ),
+                          ),
+                        ),
                       ],
                     );
                   },
@@ -120,6 +164,52 @@ class AdminDashboardPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 14),
+                Card(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      RouteNames.adminAsignaciones,
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(22),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.assignment_ind_outlined,
+                            color: AppColors.primary,
+                            size: 34,
+                          ),
+                          SizedBox(width: 18),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Asignación docente',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Relacionar docentes con asignaturas y periodos académicos.',
+                                  style: TextStyle(color: AppColors.muted),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -144,6 +234,13 @@ class AdminDashboardPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _periodoValue(List<PeriodoAcademico>? periodos) {
+    if (periodos == null) return '—';
+    if (periodos.isEmpty) return 'Sin periodo activo';
+    if (periodos.length == 1) return periodos.single.nombre;
+    return '${periodos.length} periodos activos';
   }
 }
 

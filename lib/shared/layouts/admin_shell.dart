@@ -20,17 +20,23 @@ class AdminShell extends StatelessWidget {
 
   static const _items = <_NavItem>[
     _NavItem('Dashboard', Icons.dashboard_outlined, RouteNames.admin),
-    _NavItem('Usuarios', Icons.manage_accounts_outlined, null),
-    _NavItem('Estudiantes', Icons.school_outlined, null),
-    _NavItem('Docentes', Icons.badge_outlined, null),
+    _NavItem(
+        'Usuarios', Icons.manage_accounts_outlined, RouteNames.adminUsuarios),
+    _NavItem('Estudiantes', Icons.school_outlined, RouteNames.adminEstudiantes),
+    _NavItem('Docentes', Icons.badge_outlined, RouteNames.adminDocentes),
     _NavItem(
         'Asignaturas', Icons.menu_book_outlined, RouteNames.adminAsignaturas),
-    _NavItem('Periodos académicos', Icons.calendar_month_outlined, null),
-    _NavItem('Inscripciones', Icons.app_registration_outlined, null),
-    _NavItem('Asignación docente', Icons.assignment_ind_outlined, null),
-    _NavItem('Asistencia', Icons.fact_check_outlined, null),
-    _NavItem('Calificaciones', Icons.grading_outlined, null),
-    _NavItem('Reportes', Icons.bar_chart_outlined, null),
+    _NavItem('Periodos académicos', Icons.calendar_month_outlined,
+        RouteNames.adminPeriodos),
+    _NavItem('Inscripciones', Icons.app_registration_outlined,
+        RouteNames.adminInscripciones),
+    _NavItem('Asignación docente', Icons.assignment_ind_outlined,
+        RouteNames.adminAsignaciones),
+    _NavItem(
+        'Asistencia', Icons.fact_check_outlined, RouteNames.adminAsistencias),
+    _NavItem('Calificaciones', Icons.grading_outlined,
+        RouteNames.adminCalificaciones),
+    _NavItem('Reportes', Icons.bar_chart_outlined, RouteNames.adminReportes),
   ];
 
   @override
@@ -45,7 +51,7 @@ class AdminShell extends StatelessWidget {
             drawer: desktop ? null : Drawer(width: 284, child: navigation),
             body: Row(
               children: [
-                if (desktop) SizedBox(width: 270, child: navigation),
+                if (desktop) SizedBox(width: 256, child: navigation),
                 Expanded(
                   child: Column(
                     children: [
@@ -96,76 +102,81 @@ class _Navigation extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: AppColors.primaryDark,
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 18, 20, 20),
-                child: AppBrand(compact: true, light: true),
-              ),
-              const Divider(color: Colors.white12, height: 1),
-              Expanded(
-                child: ListView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(12, 4, 12, 10),
-                      child: Text('MENÚ PRINCIPAL',
-                          style: TextStyle(
-                              color: Colors.white54,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.1)),
-                    ),
-                    for (final item in AdminShell._items)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: ListTile(
-                          dense: true,
-                          selected: item.route == selectedRoute,
-                          selectedTileColor:
-                              Colors.white.withValues(alpha: .13),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          leading: Icon(item.icon,
-                              color: item.route == selectedRoute
-                                  ? Colors.white
-                                  : Colors.white70,
-                              size: 21),
-                          title: Text(item.label,
-                              style: TextStyle(
-                                  color: item.route == selectedRoute
-                                      ? Colors.white
-                                      : Colors.white70,
-                                  fontWeight: item.route == selectedRoute
-                                      ? FontWeight.w700
-                                      : FontWeight.w500)),
-                          onTap: () => _navigate(context, item),
-                        ),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final surface = Theme.of(context).colorScheme.surface;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return Material(
+      color: surface,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+              child: AppBrand(compact: true, light: dark),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(12, 4, 12, 10),
+                    child: Text('MENÚ PRINCIPAL',
+                        style: TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.1)),
+                  ),
+                  for (final item in AdminShell._items)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: ListTile(
+                        dense: true,
+                        selected: item.route == selectedRoute,
+                        selectedTileColor:
+                            AppColors.primary.withValues(alpha: .09),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        leading: Icon(item.icon,
+                            color: item.route == selectedRoute
+                                ? AppColors.primary
+                                : AppColors.muted,
+                            size: 21),
+                        title: Text(item.label,
+                            style: TextStyle(
+                                color: item.route == selectedRoute
+                                    ? AppColors.primary
+                                    : foreground.withValues(alpha: .72),
+                                fontWeight: item.route == selectedRoute
+                                    ? FontWeight.w700
+                                    : FontWeight.w500)),
+                        onTap: () => _navigate(context, item),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
-              const Divider(color: Colors.white12, height: 1),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  leading:
-                      const Icon(Icons.logout_rounded, color: Colors.white70),
-                  title: const Text('Cerrar sesión',
-                      style: TextStyle(color: Colors.white70)),
-                  onTap: () => _signOut(context),
-                ),
+            ),
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                leading: Icon(Icons.logout_rounded,
+                    color: dark ? Colors.white70 : AppColors.muted),
+                title:
+                    Text('Cerrar sesión', style: TextStyle(color: foreground)),
+                onTap: () => _signOut(context),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
 
 class _TopBar extends StatelessWidget {
@@ -178,8 +189,8 @@ class _TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final profile = context.watch<AuthController>().profile;
     return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      height: 68,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: const Border(bottom: BorderSide(color: AppColors.border)),
