@@ -113,11 +113,15 @@ class _AsignaturasPageState extends State<AsignaturasPage> {
       selectedRoute: RouteNames.adminAsignaturas,
       title: 'Asignaturas',
       child: Padding(
-        padding:
-            EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 16 : 28),
+        padding: EdgeInsets.fromLTRB(
+          MediaQuery.sizeOf(context).width < 600 ? 16 : 32,
+          MediaQuery.sizeOf(context).width < 600 ? 20 : 32,
+          MediaQuery.sizeOf(context).width < 600 ? 16 : 32,
+          24,
+        ),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1250),
+            constraints: const BoxConstraints(maxWidth: 1440),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -129,14 +133,14 @@ class _AsignaturasPageState extends State<AsignaturasPage> {
                       icon: const Icon(Icons.add_rounded),
                       label: const Text('Nueva asignatura')),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 28),
                 _Filters(
                   controller: _busqueda,
                   selected: _filtro,
                   onSearch: (_) => setState(() {}),
                   onFilter: (value) => setState(() => _filtro = value),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 Expanded(child: _buildState(controller)),
               ],
             ),
@@ -180,46 +184,61 @@ class _Filters extends StatelessWidget {
   final ValueChanged<_EstadoFiltro> onFilter;
 
   @override
-  Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: LayoutBuilder(builder: (context, constraints) {
-            final compact = constraints.maxWidth < 620;
-            final search = TextField(
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 620;
+          final search = SizedBox(
+            height: 48,
+            child: TextField(
                 controller: controller,
                 onChanged: onSearch,
                 decoration: const InputDecoration(
                     hintText: 'Buscar por código, nombre o descripción',
-                    prefixIcon: Icon(Icons.search_rounded),
-                    isDense: true));
-            final filter = SegmentedButton<_EstadoFiltro>(
-              segments: const [
-                ButtonSegment(value: _EstadoFiltro.todas, label: Text('Todas')),
-                ButtonSegment(
-                    value: _EstadoFiltro.activas, label: Text('Activas')),
-                ButtonSegment(
-                    value: _EstadoFiltro.inactivas, label: Text('Inactivas'))
+                    prefixIcon: Icon(Icons.search_rounded, size: 21),
+                    isDense: true)),
+          );
+          final filter = SizedBox(
+            width: compact ? double.infinity : 190,
+            child: DropdownButtonFormField<_EstadoFiltro>(
+              initialValue: selected,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Estado',
+                isDense: true,
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: _EstadoFiltro.todas,
+                  child: Text('Todas'),
+                ),
+                DropdownMenuItem(
+                  value: _EstadoFiltro.activas,
+                  child: Text('Activas'),
+                ),
+                DropdownMenuItem(
+                  value: _EstadoFiltro.inactivas,
+                  child: Text('Inactivas'),
+                ),
               ],
-              selected: {selected},
-              showSelectedIcon: false,
-              onSelectionChanged: (values) => onFilter(values.first),
-            );
-            return compact
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                        search,
-                        const SizedBox(height: 12),
-                        SingleChildScrollView(
-                            scrollDirection: Axis.horizontal, child: filter)
-                      ])
-                : Row(children: [
-                    Expanded(child: search),
-                    const SizedBox(width: 14),
-                    filter
-                  ]);
-          }),
-        ),
+              onChanged: (value) {
+                if (value != null) onFilter(value);
+              },
+            ),
+          );
+          return compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                      search,
+                      const SizedBox(height: 12),
+                      filter,
+                    ])
+              : Row(children: [
+                  Expanded(flex: 3, child: search),
+                  const SizedBox(width: 16),
+                  filter
+                ]);
+        },
       );
 }
 

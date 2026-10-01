@@ -19,7 +19,7 @@ class AsignaturaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -44,7 +44,9 @@ class AsignaturaCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(asignatura.descripcion ?? 'Sin descripción',
                   style: const TextStyle(color: AppColors.muted)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -54,7 +56,7 @@ class AsignaturaCard extends StatelessWidget {
                     label: const Text('Editar'),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton.tonalIcon(
+                  TextButton.icon(
                     onPressed: onToggle,
                     icon: Icon(
                       asignatura.estado

@@ -58,11 +58,11 @@ class _AsignaturaFormDialogState extends State<AsignaturaFormDialog> {
   Widget build(BuildContext context) {
     final saving = context.watch<AsignaturaController>().saving;
     return AlertDialog(
-      icon: const Icon(Icons.menu_book_outlined, size: 34),
       title: Text(
-          widget.asignatura == null ? 'Nueva asignatura' : 'Editar asignatura'),
+        widget.asignatura == null ? 'Nueva asignatura' : 'Editar asignatura',
+      ),
       content: SizedBox(
-        width: 480,
+        width: 440,
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -74,33 +74,30 @@ class _AsignaturaFormDialogState extends State<AsignaturaFormDialog> {
                   autofocus: true,
                   textCapitalization: TextCapitalization.characters,
                   maxLength: 30,
-                  decoration: const InputDecoration(
-                      labelText: 'Código', prefixIcon: Icon(Icons.tag_rounded)),
+                  decoration: const InputDecoration(labelText: 'Código'),
                   validator: (value) => value == null || value.trim().isEmpty
                       ? 'El código es obligatorio.'
                       : null,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 TextFormField(
                   controller: _nombre,
                   maxLength: 150,
-                  decoration: const InputDecoration(
-                      labelText: 'Nombre',
-                      prefixIcon: Icon(Icons.menu_book_outlined)),
+                  decoration: const InputDecoration(labelText: 'Nombre'),
                   validator: (value) => value == null || value.trim().isEmpty
                       ? 'El nombre es obligatorio.'
                       : null,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 TextFormField(
                   controller: _descripcion,
                   maxLength: 300,
                   minLines: 2,
                   maxLines: 4,
                   decoration: const InputDecoration(
-                      labelText: 'Descripción',
-                      alignLabelWithHint: true,
-                      prefixIcon: Icon(Icons.notes_rounded)),
+                    labelText: 'Descripción',
+                    alignLabelWithHint: true,
+                  ),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
@@ -116,7 +113,7 @@ class _AsignaturaFormDialogState extends State<AsignaturaFormDialog> {
         ),
       ),
       actions: [
-        OutlinedButton(
+        TextButton(
           onPressed: saving ? null : () => Navigator.pop(context, false),
           child: const Text('Cancelar'),
         ),
