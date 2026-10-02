@@ -2,108 +2,153 @@
 
 ## Seminario de Formación Ministerial Tarija
 
-Proyecto desarrollado como trabajo final del **Diplomado en Desarrollo Web y Aplicaciones Móviles** de la **Universidad Autónoma Juan Misael Saracho (UAJMS)**, gestión 2026.
+Aplicación académica desarrollada con Flutter y Supabase como trabajo final del Diplomado en Desarrollo Web y Aplicaciones Móviles de la Universidad Autónoma Juan Misael Saracho (UAJMS), gestión 2026.
 
-La solución centraliza la información académica del Seminario de Formación Ministerial Tarija mediante una aplicación Flutter para web y Android, con Supabase como backend.
+El sistema centraliza la administración de usuarios, docentes, estudiantes y procesos académicos del Seminario de Formación Ministerial Tarija. Funciona en Flutter Web y Android, con PostgreSQL, Supabase Auth, PostgREST y Row Level Security (RLS) como backend.
 
-## Roles del sistema
+## Roles
 
-El sistema admite únicamente dos roles con acceso autenticado:
+El sistema admite dos roles autenticados:
 
 - `ADMINISTRADOR`
 - `DOCENTE`
 
-El estudiante es una entidad académica administrada por el Administrador. No es un usuario del sistema, no dispone de cuenta y no inicia sesión.
+Los estudiantes son registros académicos. No poseen una cuenta de acceso ni inician sesión.
 
 ### Administrador
 
-Puede administrar la información académica, incluidos estudiantes, docentes, asignaturas, periodos académicos, inscripciones, asignaciones docentes, asistencia, calificaciones y reportes.
+Puede gestionar usuarios, docentes, estudiantes, asignaturas, periodos académicos, inscripciones, asignaciones docentes, consultas de asistencia, calificaciones y reportes.
 
 ### Docente
 
-Puede iniciar sesión y acceder únicamente a la información académica autorizada correspondiente a sus asignaciones.
+Puede consultar sus asignaciones activas y trabajar únicamente con la información académica autorizada por RLS, incluyendo asistencia y calificaciones de los estudiantes relacionados con sus asignaturas.
 
-## Arquitectura y tecnologías
+## Funcionalidades implementadas
 
-La aplicación utiliza una arquitectura cliente-servidor. Flutter proporciona los clientes web y Android, mientras que Supabase aporta autenticación, Data API/PostgREST, PostgreSQL y políticas Row Level Security (RLS).
+### Autenticación y autorización
 
-Tecnologías principales:
+- Inicio y cierre de sesión mediante Supabase Auth.
+- Recuperación del perfil desde `public.perfil_usuario`.
+- Redirección por rol y protección de rutas.
+- Sesiones JWT y políticas RLS.
 
-- Flutter y Dart.
-- Material 3.
-- Supabase Auth.
-- PostgreSQL y Data API/PostgREST.
-- Row Level Security (RLS).
-- Git y GitHub.
-- Vercel para el despliegue web.
+### Gestión de Usuarios
 
-## Funcionalidad implementada
+- Creación de cuentas `ADMINISTRADOR` y `DOCENTE`.
+- Datos personales: nombres, apellidos, CI, teléfono, dirección, sexo y fecha de nacimiento.
+- Formulario profesional dinámico para nuevas cuentas docentes.
+- Edición de datos generales.
+- Desactivación y reactivación de cuentas.
+- Alta segura mediante la Edge Function `crear-usuario`.
 
-### Autenticación, autorización y paneles
+Para nuevas cuentas `DOCENTE`, sexo, fecha de nacimiento y especialidad son obligatorios. Los valores admitidos por la interfaz para sexo son `MASCULINO` y `FEMENINO`.
 
-- inicio y cierre de sesión con Supabase Auth;
-- recuperación del perfil académico del usuario autenticado;
-- redirección al panel correspondiente según el rol;
-- protección de rutas para `ADMINISTRADOR` y `DOCENTE`;
-- panel administrativo responsivo con acceso a Gestión de Asignaturas;
-- panel docente responsivo, preparado para incorporar asignaturas, asistencia y calificaciones.
+### Gestión de Docentes
 
-Los módulos distintos de Gestión de Asignaturas que aparecen en los paneles constituyen ampliaciones previstas y todavía no forman parte de la vertical funcional entregada.
+- Listado de perfiles con rol `DOCENTE`.
+- Consulta del detalle personal y profesional.
+- Edición de datos personales.
+- UPSERT de información profesional en `public.datos_docente`.
+- Desactivación y reactivación.
+- Compatibilidad con docentes antiguos sin información profesional completa.
 
-### RF-05 Gestión de Asignaturas
+Las cuentas nuevas se crean exclusivamente desde Gestión de Usuarios.
 
-La vertical de Gestión de Asignaturas está implementada y permite:
+### Gestión de Estudiantes
 
-- crear asignaturas;
-- listar asignaturas;
-- editar asignaturas;
-- desactivar asignaturas;
-- reactivar asignaturas.
+- Registro, listado y edición.
+- Desactivación y reactivación.
+- Búsqueda por nombre, CI y código.
+- Código automático generado en PostgreSQL: `EST0001`, `EST0002`, etc.
+- Código visible, único, obligatorio e inmutable.
 
-La baja es lógica: al desactivar una asignatura se establece `estado=false`. No se utiliza `DELETE`, por lo que el registro permanece almacenado y puede reactivarse.
+Flutter no calcula ni envía el código durante el alta. La identity y el trigger de PostgreSQL son la única fuente de generación.
 
-## Endpoint de comprobación
+### Gestión académica
 
-El archivo `api/v1/salud.js` implementa el endpoint de comprobación del servicio:
+- Asignaturas: creación, edición, desactivación y reactivación.
+- Periodos académicos: creación, edición y control de estado.
+- Inscripciones de estudiantes por asignatura y periodo.
+- Asignación de docentes activos a asignaturas y periodos.
+- Consulta de asignaciones propias para docentes.
+- Registro y actualización de asistencia.
+- Registro y actualización de calificaciones entre 0 y 100.
+- Consultas administrativas de asistencia y calificaciones.
+- Reportes académicos y exportación CSV en web.
 
-```http
-GET /api/v1/salud
+Las bajas son lógicas mediante `estado=false`; no se eliminan los registros académicos.
+
+## Modelo de usuarios y docentes
+
+```text
+auth.users
+    |
+    | 1:1
+    v
+public.perfil_usuario
+    |
+    | 1 : 0..1
+    v
+public.datos_docente
 ```
 
-## Estructura de `lib/`
+- `perfil_usuario` contiene los datos generales de la cuenta y la persona.
+- `datos_docente` contiene información profesional exclusiva del docente.
+- La disponibilidad para asignaciones depende de `perfil_usuario.rol = 'DOCENTE'` y `perfil_usuario.estado = true`.
+
+## Arquitectura
+
+El código Flutter utiliza una organización feature-first con separación entre datos, dominio y presentación.
 
 ```text
 lib/
-├── core/
-├── features/
-│   ├── auth/
-│   ├── asignaturas/
-│   └── dashboard/
-├── routes/
-├── shared/
-├── app.dart
-└── main.dart
+|-- core/
+|-- features/
+|   |-- auth/
+|   |-- usuarios/
+|   |-- docentes/
+|   |-- estudiantes/
+|   |-- asignaturas/
+|   |-- periodos/
+|   |-- inscripciones/
+|   |-- asignaciones_docente/
+|   |-- asistencia/
+|   |-- asistencias_admin/
+|   |-- calificaciones/
+|   |-- calificaciones_admin/
+|   |-- reportes/
+|   `-- dashboard/
+|-- routes/
+|-- shared/
+|-- app.dart
+`-- main.dart
 ```
 
-- `core/`: configuración, manejo de errores, servicios y tema compartido.
-- `features/auth/`: autenticación y autorización de los roles admitidos.
-- `features/asignaturas/`: vertical de Gestión de Asignaturas, organizada por datos, dominio y presentación.
-- `features/dashboard/`: paneles responsivos de administrador y docente.
-- `routes/`: rutas, nombres de rutas y protección de navegación.
-- `shared/`: layouts y widgets reutilizables.
-- `app.dart`: configuración principal de la aplicación.
-- `main.dart`: punto de entrada.
+Cada feature puede contener:
 
-## Configuración
+- `data/`: modelos, datasources e implementaciones de repositorio;
+- `domain/`: entidades y contratos de repositorio;
+- `presentation/`: controladores, páginas y widgets.
 
-Las únicas variables de configuración son:
+## Tecnologías
+
+- Flutter y Dart.
+- Material 3 y Provider.
+- Supabase Flutter y Supabase Auth.
+- PostgreSQL, PostgREST y Row Level Security.
+- Supabase Edge Functions con Deno/TypeScript.
+- Vercel para despliegue web.
+
+## Configuración local
+
+La aplicación requiere:
 
 ```text
 SUPABASE_URL
 SUPABASE_PUBLISHABLE_KEY
 ```
 
-Para el desarrollo local se utiliza `config/local.json`:
+Crear `config/local.json` a partir de `config/local.example.json`:
 
 ```json
 {
@@ -112,19 +157,16 @@ Para el desarrollo local se utiliza `config/local.json`:
 }
 ```
 
-`config/local.json` contiene la configuración local y no se sube al repositorio. El archivo versionado `config/local.example.json` sirve como plantilla y puede contener la URL y la clave publicable del proyecto de demostración. No debe contener contraseñas, claves privadas ni credenciales privilegiadas.
-
-La aplicación cliente debe usar exclusivamente la clave publicable de Supabase junto con políticas RLS adecuadas. Nunca se debe incluir una clave privilegiada, como `service_role`, en Flutter ni publicarla en el repositorio.
+`config/local.json` no debe versionarse. Flutter solo debe recibir la clave publicable; nunca se debe incluir `service_role` en el cliente.
 
 ## Instalación y ejecución
 
 Requisitos:
 
-- Git.
-- Flutter SDK y Dart SDK.
-- Navegador compatible para la versión web.
-- Android SDK, emulador o dispositivo físico para Android.
-- Proyecto de Supabase configurado.
+- Flutter SDK compatible con Dart `>=3.4.0 <4.0.0`;
+- Git y Chrome;
+- Android SDK para ejecutar o compilar Android;
+- un proyecto Supabase configurado.
 
 Instalar dependencias:
 
@@ -132,13 +174,7 @@ Instalar dependencias:
 flutter pub get
 ```
 
-Analizar el proyecto:
-
-```bash
-flutter analyze
-```
-
-Ejecutar en Chrome con la configuración local:
+Ejecutar en Chrome:
 
 ```bash
 flutter run -d chrome --dart-define-from-file=config/local.json
@@ -150,25 +186,51 @@ Ejecutar en Android:
 flutter run --dart-define-from-file=config/local.json
 ```
 
-## Pruebas
+## Supabase
 
-Actualmente existen **8 tests aprobados**.
+### Migraciones y auditorías
 
-Para ejecutar la suite:
+Las migraciones se encuentran en `supabase/migrations/` y deben aplicarse en orden cronológico.
+
+El historial incluye migraciones que anteriormente fueron aplicadas manualmente. Antes de usar `supabase db push`, se debe comprobar que el historial local coincida con el remoto. No se debe reparar ni alterar el historial automáticamente sin revisar primero el proyecto Supabase.
+
+Las auditorías SQL están en `supabase/tests/`. Varias se ejecutan dentro de una transacción y finalizan con `ROLLBACK`.
+
+> Las secuencias PostgreSQL no son transaccionales. Una auditoría puede consumir valores y dejar saltos válidos en códigos `ESTxxxx`, aunque no deje filas de prueba persistentes.
+
+### Edge Functions
+
+- `crear-usuario`: crea Auth, perfil general y datos profesionales cuando el rol es `DOCENTE`.
+- `crear-docente`: función histórica conservada; Gestión de Docentes no la utiliza para crear cuentas nuevas.
+
+Despliegue manual de la función vigente:
 
 ```bash
-flutter test
+npx supabase functions deploy crear-usuario
 ```
+
+La clave `service_role` permanece exclusivamente en el entorno seguro de Supabase y nunca se expone a Flutter.
+
+## Pruebas y calidad
+
+```bash
+flutter analyze --no-pub
+flutter test --no-pub
+flutter build web --release --no-pub --dart-define-from-file=config/local.json
+git diff --check
+```
+
+La suite actual contiene **198 pruebas aprobadas**, incluyendo controladores, modelos, payloads y widgets responsive.
 
 ## Compilación
 
-Generar la aplicación web:
+Web:
 
 ```bash
 flutter build web --release --dart-define-from-file=config/local.json
 ```
 
-Generar el APK:
+Android APK:
 
 ```bash
 flutter build apk --release --dart-define-from-file=config/local.json
@@ -178,22 +240,31 @@ El APK se genera normalmente en `build/app/outputs/flutter-apk/app-release.apk`.
 
 ## Despliegue web en Vercel
 
-El repositorio incluye `vercel.json` y `vercel-build.sh`. En el proyecto de Vercel se deben configurar las variables de entorno `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`; el script instala Flutter cuando es necesario y genera `build/web` en modo release.
+El repositorio incluye `vercel.json` y `vercel-build.sh`. En Vercel deben configurarse `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`.
 
-Las reescrituras definidas en `vercel.json` permiten que las rutas de la aplicación Flutter funcionen al recargar el navegador.
+Las reescrituras permiten recargar correctamente las rutas de Flutter Web.
+
+## Endpoint de salud
+
+```http
+GET /api/v1/salud
+```
+
+Implementado en `api/v1/salud.js`.
 
 ## Seguridad
 
-- La autenticación se gestiona mediante Supabase Auth.
-- El acceso autenticado está restringido a `ADMINISTRADOR` y `DOCENTE`.
-- Las sesiones utilizan JWT.
-- Las políticas RLS restringen el acceso a los datos.
-- El cliente no contiene credenciales privadas ni claves privilegiadas.
-- Los docentes solo acceden a la información autorizada para sus asignaciones.
+- Autenticación mediante Supabase Auth y JWT.
+- RLS habilitado en las tablas expuestas.
+- Helpers `SECURITY DEFINER` para comprobar roles sin recursión RLS.
+- El administrador activo gestiona catálogos y perfiles.
+- El docente solo accede a información relacionada con sus asignaciones.
+- No se exponen claves privadas, contraseñas ni tokens en Flutter o logs.
+- No se utiliza `DELETE` para bajas funcionales.
 
 ## Alcance
 
-El proyecto se limita a la gestión académica. No incluye aula virtual, entrega de tareas, videoclases, foros, mensajería interna, pagos, facturación, biblioteca ni gestión médica o psicológica.
+El proyecto está orientado a gestión académica. No incluye aula virtual, entrega de tareas, videoclases, foros, mensajería interna, pagos, facturación, biblioteca ni gestión médica o psicológica.
 
 ## Autor
 
