@@ -29,7 +29,6 @@ class EstudianteRemoteDatasource {
   }
 
   Future<EstudianteModel> crear({
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,
@@ -38,14 +37,12 @@ class EstudianteRemoteDatasource {
     final row = await _client
         .schema('public')
         .from('estudiante')
-        .insert({
-          'codigo': codigo,
-          'nombres': nombres,
-          'apellidos': apellidos,
-          'ci': ci,
-          'telefono': telefono,
-          'estado': true,
-        })
+        .insert(EstudianteModel.createPayload(
+          nombres: nombres,
+          apellidos: apellidos,
+          ci: ci,
+          telefono: telefono,
+        ))
         .select()
         .single();
     return EstudianteModel.fromMap(row);
@@ -53,7 +50,6 @@ class EstudianteRemoteDatasource {
 
   Future<EstudianteModel> actualizar({
     required int id,
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,
@@ -62,13 +58,12 @@ class EstudianteRemoteDatasource {
     final row = await _client
         .schema('public')
         .from('estudiante')
-        .update({
-          'codigo': codigo,
-          'nombres': nombres,
-          'apellidos': apellidos,
-          'ci': ci,
-          'telefono': telefono,
-        })
+        .update(EstudianteModel.updatePayload(
+          nombres: nombres,
+          apellidos: apellidos,
+          ci: ci,
+          telefono: telefono,
+        ))
         .eq('id_estudiante', id)
         .select()
         .single();

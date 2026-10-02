@@ -50,7 +50,7 @@ class _EstudiantesPageState extends State<EstudiantesPage> {
   }
 
   Future<void> _form([Estudiante? estudiante]) async {
-    final saved = await showDialog<bool>(
+    final saved = await showDialog<Estudiante>(
       context: context,
       barrierDismissible: false,
       builder: (_) => ChangeNotifierProvider.value(
@@ -58,12 +58,13 @@ class _EstudiantesPageState extends State<EstudiantesPage> {
         child: EstudianteFormDialog(estudiante: estudiante),
       ),
     );
-    if (!mounted || saved != true) return;
+    if (!mounted || saved == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           estudiante == null
-              ? 'Estudiante registrado correctamente.'
+              ? 'Estudiante registrado correctamente. Código asignado: '
+                  '${saved.codigo ?? 'no disponible'}'
               : 'Estudiante actualizado correctamente.',
         ),
       ),

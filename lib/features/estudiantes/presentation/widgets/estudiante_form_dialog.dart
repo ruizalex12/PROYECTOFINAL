@@ -15,7 +15,6 @@ class EstudianteFormDialog extends StatefulWidget {
 
 class _EstudianteFormDialogState extends State<EstudianteFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _codigo;
   late final TextEditingController _nombres;
   late final TextEditingController _apellidos;
   late final TextEditingController _ci;
@@ -25,7 +24,6 @@ class _EstudianteFormDialogState extends State<EstudianteFormDialog> {
   @override
   void initState() {
     super.initState();
-    _codigo = TextEditingController(text: widget.estudiante?.codigo);
     _nombres = TextEditingController(text: widget.estudiante?.nombres);
     _apellidos = TextEditingController(text: widget.estudiante?.apellidos);
     _ci = TextEditingController(text: widget.estudiante?.ci);
@@ -34,7 +32,6 @@ class _EstudianteFormDialogState extends State<EstudianteFormDialog> {
 
   @override
   void dispose() {
-    _codigo.dispose();
     _nombres.dispose();
     _apellidos.dispose();
     _ci.dispose();
@@ -45,17 +42,17 @@ class _EstudianteFormDialogState extends State<EstudianteFormDialog> {
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _error = null);
-    final error = await context.read<EstudianteController>().guardar(
-          existente: widget.estudiante,
-          codigo: _codigo.text,
-          nombres: _nombres.text,
-          apellidos: _apellidos.text,
-          ci: _ci.text,
-          telefono: _telefono.text,
-        );
+    final controller = context.read<EstudianteController>();
+    final error = await controller.guardar(
+      existente: widget.estudiante,
+      nombres: _nombres.text,
+      apellidos: _apellidos.text,
+      ci: _ci.text,
+      telefono: _telefono.text,
+    );
     if (!mounted) return;
     if (error == null) {
-      Navigator.pop(context, true);
+      Navigator.pop(context, controller.ultimoGuardado);
     } else {
       setState(() => _error = error);
     }
@@ -76,15 +73,21 @@ class _EstudianteFormDialogState extends State<EstudianteFormDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
-                  controller: _codigo,
-                  textCapitalization: TextCapitalization.characters,
-                  maxLength: 30,
-                  decoration: const InputDecoration(
-                    labelText: 'Código',
-                    helperText: 'Opcional',
+                if (widget.estudiante == null)
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'El código será generado automáticamente por el sistema.',
+                    ),
+                  )
+                else
+                  TextFormField(
+                    key: const Key('estudiante-codigo-solo-lectura'),
+                    initialValue: widget.estudiante!.codigo,
+                    readOnly: true,
+                    enabled: false,
+                    decoration: const InputDecoration(labelText: 'Código'),
                   ),
-                ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _nombres,
@@ -142,7 +145,7 @@ class _EstudianteFormDialogState extends State<EstudianteFormDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: saving ? null : () => Navigator.pop(context, false),
+          onPressed: saving ? null : () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
         FilledButton(

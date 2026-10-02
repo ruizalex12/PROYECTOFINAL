@@ -21,7 +21,6 @@ class EstudianteRepositoryImpl implements EstudianteRepository {
 
   @override
   Future<Estudiante> crear({
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,
@@ -29,7 +28,6 @@ class EstudianteRepositoryImpl implements EstudianteRepository {
   }) =>
       _mapDuplicate(
         () => _datasource.crear(
-          codigo: _optionalCode(codigo),
           nombres: nombres.trim(),
           apellidos: apellidos.trim(),
           ci: ci.trim(),
@@ -40,7 +38,6 @@ class EstudianteRepositoryImpl implements EstudianteRepository {
   @override
   Future<Estudiante> actualizar({
     required int id,
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,
@@ -49,7 +46,6 @@ class EstudianteRepositoryImpl implements EstudianteRepository {
       _mapDuplicate(
         () => _datasource.actualizar(
           id: id,
-          codigo: _optionalCode(codigo),
           nombres: nombres.trim(),
           apellidos: apellidos.trim(),
           ci: ci.trim(),
@@ -63,8 +59,6 @@ class EstudianteRepositoryImpl implements EstudianteRepository {
 
   @override
   Future<int> contarActivos() => _datasource.contarActivos();
-
-  String? _optionalCode(String? value) => _optional(value)?.toUpperCase();
 
   String? _optional(String? value) {
     final normalized = value?.trim();

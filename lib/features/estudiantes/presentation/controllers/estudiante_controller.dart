@@ -15,6 +15,7 @@ class EstudianteController extends ChangeNotifier {
   List<Estudiante> _items = const [];
   String? _errorMessage;
   bool _saving = false;
+  Estudiante? _ultimoGuardado;
   String _busqueda = '';
   bool? _estado;
 
@@ -22,6 +23,7 @@ class EstudianteController extends ChangeNotifier {
   List<Estudiante> get items => List.unmodifiable(_items);
   String? get errorMessage => _errorMessage;
   bool get saving => _saving;
+  Estudiante? get ultimoGuardado => _ultimoGuardado;
   String get busqueda => _busqueda;
   bool? get estado => _estado;
   bool get hasFilters => _busqueda.isNotEmpty || _estado != null;
@@ -54,27 +56,25 @@ class EstudianteController extends ChangeNotifier {
 
   Future<String?> guardar({
     Estudiante? existente,
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,
     String? telefono,
   }) async {
     _saving = true;
+    _ultimoGuardado = null;
     notifyListeners();
     try {
       if (existente == null) {
-        await _repository.crear(
-          codigo: codigo,
+        _ultimoGuardado = await _repository.crear(
           nombres: nombres,
           apellidos: apellidos,
           ci: ci,
           telefono: telefono,
         );
       } else {
-        await _repository.actualizar(
+        _ultimoGuardado = await _repository.actualizar(
           id: existente.id,
-          codigo: codigo,
           nombres: nombres,
           apellidos: apellidos,
           ci: ci,

@@ -7,7 +7,6 @@ abstract interface class EstudianteRepository {
   Future<List<Estudiante>> listar({String? busqueda, bool? estado});
 
   Future<Estudiante> crear({
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,
@@ -16,7 +15,6 @@ abstract interface class EstudianteRepository {
 
   Future<Estudiante> actualizar({
     required int id,
-    String? codigo,
     required String nombres,
     required String apellidos,
     required String ci,

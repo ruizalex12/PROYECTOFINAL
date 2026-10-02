@@ -22,4 +22,31 @@ class EstudianteModel extends Estudiante {
         estado: map['estado'] == true,
         fechaRegistro: DateTime.parse(map['fecha_registro'].toString()),
       );
+
+  static Map<String, dynamic> createPayload({
+    required String nombres,
+    required String apellidos,
+    required String ci,
+    String? telefono,
+  }) =>
+      {
+        'nombres': nombres,
+        'apellidos': apellidos,
+        'ci': ci,
+        'telefono': telefono,
+        'estado': true,
+      };
+
+  static Map<String, dynamic> updatePayload({
+    required String nombres,
+    required String apellidos,
+    required String ci,
+    String? telefono,
+  }) =>
+      {
+        'nombres': nombres,
+        'apellidos': apellidos,
+        'ci': ci,
+        'telefono': telefono,
+      };
 }
