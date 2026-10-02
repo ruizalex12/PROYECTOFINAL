@@ -31,4 +31,5 @@ APK/
 **/GeneratedPluginRegistrant.java
 
 # Caché de Gradle
-android/.gradle/
+android/.gradle/supabase/.temp/
+devtools_options.yaml
