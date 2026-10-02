@@ -33,3 +33,4 @@ APK/
 # Caché de Gradle
 android/.gradle/supabase/.temp/
 devtools_options.yaml
+supabase/.temp/
