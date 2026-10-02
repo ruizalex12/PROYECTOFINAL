@@ -12,9 +12,13 @@ abstract interface class UsuarioRepository {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    SexoUsuario? sexo,
+    String? fechaNacimiento,
     required String correo,
     required String contrasena,
     required UsuarioRol rol,
+    DatosDocenteCreacion? docente,
   });
 
   Future<Usuario> actualizar({

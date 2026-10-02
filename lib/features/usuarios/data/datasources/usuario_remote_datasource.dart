@@ -35,22 +35,30 @@ class UsuarioRemoteDatasource {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    SexoUsuario? sexo,
+    String? fechaNacimiento,
     required String correo,
     required String contrasena,
     required UsuarioRol rol,
+    DatosDocenteCreacion? docente,
   }) async {
     try {
       final response = await _client.functions.invoke(
         'crear-usuario',
-        body: {
-          'nombres': nombres,
-          'apellidos': apellidos,
-          'ci': ci,
-          'telefono': telefono,
-          'correo': correo,
-          'password': contrasena,
-          'rol': rol.databaseValue,
-        },
+        body: buildCreatePayload(
+          nombres: nombres,
+          apellidos: apellidos,
+          ci: ci,
+          telefono: telefono,
+          direccion: direccion,
+          sexo: sexo,
+          fechaNacimiento: fechaNacimiento,
+          correo: correo,
+          contrasena: contrasena,
+          rol: rol,
+          docente: docente,
+        ),
       );
       final data = Map<String, dynamic>.from(response.data as Map);
       if (response.status < 200 || response.status >= 300) {
@@ -68,6 +76,43 @@ class UsuarioRemoteDatasource {
       }
       throw const AppException('No fue posible crear el usuario.');
     }
+  }
+
+  static Map<String, dynamic> buildCreatePayload({
+    required String nombres,
+    required String apellidos,
+    required String ci,
+    String? telefono,
+    String? direccion,
+    SexoUsuario? sexo,
+    String? fechaNacimiento,
+    required String correo,
+    required String contrasena,
+    required UsuarioRol rol,
+    DatosDocenteCreacion? docente,
+  }) {
+    final payload = <String, dynamic>{
+      'nombres': nombres,
+      'apellidos': apellidos,
+      'ci': ci,
+      'telefono': telefono,
+      'direccion': direccion,
+      'sexo': sexo?.databaseValue,
+      'fechaNacimiento': fechaNacimiento,
+      'correo': correo,
+      'rol': rol.databaseValue,
+      'password': contrasena,
+    };
+    if (rol == UsuarioRol.docente && docente != null) {
+      payload['docente'] = <String, dynamic>{
+        'especialidad': docente.especialidad,
+        'tituloProfesional': docente.tituloProfesional,
+        'gradoAcademico': docente.gradoAcademico,
+        'fechaIncorporacion': docente.fechaIncorporacion,
+        'observaciones': docente.observaciones,
+      };
+    }
+    return payload;
   }
 
   Future<UsuarioModel> actualizar({

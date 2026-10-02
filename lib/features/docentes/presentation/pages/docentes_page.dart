@@ -11,6 +11,7 @@ import '../../domain/entities/docente.dart';
 import '../controllers/docente_controller.dart';
 import '../widgets/docente_filters.dart';
 import '../widgets/docente_form_dialog.dart';
+import '../widgets/docente_detail_dialog.dart';
 import '../widgets/docente_table.dart';
 
 class DocentesPage extends StatefulWidget {
@@ -67,6 +68,11 @@ class _DocentesPageState extends State<DocentesPage> {
       ),
     );
   }
+
+  Future<void> _detail(Docente docente) => showDialog<void>(
+        context: context,
+        builder: (_) => DocenteDetailDialog(docente: docente),
+      );
 
   Future<void> _toggle(Docente docente) async {
     final activating = !docente.estado;
@@ -178,6 +184,7 @@ class _DocentesPageState extends State<DocentesPage> {
             return SingleChildScrollView(
               child: DocenteTable(
                 items: items,
+                onView: _detail,
                 onEdit: _form,
                 onToggle: _toggle,
               ),
@@ -208,16 +215,23 @@ class _DocentesPageState extends State<DocentesPage> {
                       ),
                       const SizedBox(height: 8),
                       Text('CI: ${item.ci}'),
-                      Text(item.correo),
+                      Text(
+                          'Especialidad: ${item.especialidad ?? 'Sin registrar'}'),
                       if (item.telefono != null)
                         Text(
                           'Teléfono: ${item.telefono}',
                           style: const TextStyle(color: AppColors.muted),
                         ),
                       const Divider(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 4,
+                        runSpacing: 4,
                         children: [
+                          TextButton(
+                            onPressed: () => _detail(item),
+                            child: const Text('Ver detalle'),
+                          ),
                           TextButton(
                             onPressed: () => _form(item),
                             child: const Text('Editar'),

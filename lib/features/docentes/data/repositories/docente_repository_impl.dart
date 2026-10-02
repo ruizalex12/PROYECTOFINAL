@@ -21,6 +21,14 @@ class DocenteRepositoryImpl implements DocenteRepository {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    required String sexo,
+    required DateTime fechaNacimiento,
+    required String especialidad,
+    String? tituloProfesional,
+    String? gradoAcademico,
+    DateTime? fechaIncorporacion,
+    String? observaciones,
   }) =>
       _mapDuplicate(
         () => _datasource.actualizar(
@@ -29,6 +37,14 @@ class DocenteRepositoryImpl implements DocenteRepository {
           apellidos: apellidos.trim(),
           ci: ci.trim(),
           telefono: _optional(telefono),
+          direccion: _optional(direccion),
+          sexo: sexo,
+          fechaNacimiento: fechaNacimiento,
+          especialidad: especialidad.trim(),
+          tituloProfesional: _optional(tituloProfesional),
+          gradoAcademico: _optional(gradoAcademico),
+          fechaIncorporacion: fechaIncorporacion,
+          observaciones: _optional(observaciones),
         ),
       );
 

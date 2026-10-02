@@ -22,6 +22,8 @@ class UsuarioTable extends StatelessWidget {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
+            horizontalMargin: 20,
+            columnSpacing: 24,
             headingRowColor: WidgetStatePropertyAll(
               Theme.of(context).colorScheme.surfaceContainerLowest,
             ),
@@ -47,19 +49,21 @@ class UsuarioTable extends StatelessWidget {
         DataCell(StatusBadge(active: item.estado)),
         DataCell(Text(_date(item.fechaRegistro))),
         DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-          TextButton.icon(
+          IconButton(
             onPressed: () => onEdit(item),
+            tooltip: 'Editar usuario',
             icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Editar'),
+            visualDensity: VisualDensity.compact,
           ),
-          TextButton.icon(
+          IconButton(
             onPressed: () => onToggle(item),
+            tooltip: item.estado ? 'Desactivar usuario' : 'Reactivar usuario',
             icon: Icon(
               item.estado ? Icons.block_outlined : Icons.check_circle_outline,
               size: 18,
               color: item.estado ? AppColors.danger : AppColors.success,
             ),
-            label: Text(item.estado ? 'Desactivar' : 'Reactivar'),
+            visualDensity: VisualDensity.compact,
           ),
         ])),
       ]);

@@ -34,6 +34,9 @@ final _docente = Docente(
     nombres: 'Ana',
     apellidos: 'Flores',
     ci: '1',
+    sexo: 'FEMENINO',
+    fechaNacimiento: DateTime(1990),
+    especialidad: 'Teología',
     estado: true,
     fechaRegistro: DateTime(2026));
 
@@ -47,7 +50,15 @@ class _Repository implements DocenteRepository {
           required String nombres,
           required String apellidos,
           required String ci,
-          String? telefono}) async =>
+          String? telefono,
+          String? direccion,
+          required String sexo,
+          required DateTime fechaNacimiento,
+          required String especialidad,
+          String? tituloProfesional,
+          String? gradoAcademico,
+          DateTime? fechaIncorporacion,
+          String? observaciones}) async =>
       _docente;
   @override
   Future<Docente> cambiarEstado(

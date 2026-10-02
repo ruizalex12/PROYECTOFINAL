@@ -8,11 +8,13 @@ class DocenteTable extends StatelessWidget {
   const DocenteTable({
     super.key,
     required this.items,
+    required this.onView,
     required this.onEdit,
     required this.onToggle,
   });
 
   final List<Docente> items;
+  final ValueChanged<Docente> onView;
   final ValueChanged<Docente> onEdit;
   final ValueChanged<Docente> onToggle;
 
@@ -22,13 +24,15 @@ class DocenteTable extends StatelessWidget {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
+            horizontalMargin: 20,
+            columnSpacing: 24,
             headingRowColor: WidgetStatePropertyAll(
               Theme.of(context).colorScheme.surfaceContainerLowest,
             ),
             columns: const [
               DataColumn(label: Text('Docente')),
               DataColumn(label: Text('CI')),
-              DataColumn(label: Text('Correo')),
+              DataColumn(label: Text('Especialidad')),
               DataColumn(label: Text('Teléfono')),
               DataColumn(label: Text('Estado')),
               DataColumn(label: Text('Acciones')),
@@ -39,20 +43,33 @@ class DocenteTable extends StatelessWidget {
                     cells: [
                       DataCell(_text(item.nombreCompleto, 210, bold: true)),
                       DataCell(_text(item.ci, 110)),
-                      DataCell(_text(item.correo, 220)),
+                      DataCell(_text(item.especialidad ?? '—', 180)),
                       DataCell(_text(item.telefono ?? '—', 110)),
                       DataCell(StatusBadge(active: item.estado)),
                       DataCell(
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            TextButton.icon(
-                              onPressed: () => onEdit(item),
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              label: const Text('Editar'),
+                            IconButton(
+                              onPressed: () => onView(item),
+                              tooltip: 'Ver detalle del docente',
+                              icon: const Icon(
+                                Icons.visibility_outlined,
+                                size: 18,
+                              ),
+                              visualDensity: VisualDensity.compact,
                             ),
-                            TextButton.icon(
+                            IconButton(
+                              onPressed: () => onEdit(item),
+                              tooltip: 'Editar docente',
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            IconButton(
                               onPressed: () => onToggle(item),
+                              tooltip: item.estado
+                                  ? 'Desactivar docente'
+                                  : 'Reactivar docente',
                               icon: Icon(
                                 item.estado
                                     ? Icons.block_outlined
@@ -62,9 +79,7 @@ class DocenteTable extends StatelessWidget {
                                     ? AppColors.danger
                                     : AppColors.success,
                               ),
-                              label: Text(
-                                item.estado ? 'Desactivar' : 'Reactivar',
-                              ),
+                              visualDensity: VisualDensity.compact,
                             ),
                           ],
                         ),

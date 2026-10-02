@@ -63,9 +63,13 @@ class UsuarioController extends ChangeNotifier {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    SexoUsuario? sexo,
+    String? fechaNacimiento,
     required String correo,
     required String contrasena,
     required UsuarioRol rol,
+    DatosDocenteCreacion? docente,
   }) async {
     _saving = true;
     notifyListeners();
@@ -75,9 +79,13 @@ class UsuarioController extends ChangeNotifier {
         apellidos: apellidos,
         ci: ci,
         telefono: telefono,
+        direccion: direccion,
+        sexo: sexo,
+        fechaNacimiento: fechaNacimiento,
         correo: correo,
         contrasena: contrasena,
         rol: rol,
+        docente: docente,
       );
       await cargar(busqueda: _busqueda, rol: _rol, estado: _estado);
       return null;

@@ -219,7 +219,7 @@ class _UsuariosPageState extends State<UsuariosPage> {
                       Text('CI: ${item.ci}'),
                       Text('Rol: ${item.rol.label}'),
                       const Divider(height: 24),
-                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                      Wrap(alignment: WrapAlignment.end, children: [
                         TextButton(
                           onPressed: () => _form(item),
                           child: const Text('Editar'),

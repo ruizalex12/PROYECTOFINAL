@@ -53,6 +53,10 @@ void main() {
       apellidos: 'Flores',
       ci: '111',
       telefono: '70000000',
+      direccion: 'Calle 1',
+      sexo: 'FEMENINO',
+      fechaNacimiento: DateTime(1990, 1, 1),
+      especialidad: 'Teología',
     );
     expect(error, isNull);
     expect(repository.updated, isTrue);
@@ -122,7 +126,15 @@ class _FakeRepository implements DocenteRepository {
       required String nombres,
       required String apellidos,
       required String ci,
-      String? telefono}) async {
+      String? telefono,
+      String? direccion,
+      required String sexo,
+      required DateTime fechaNacimiento,
+      required String especialidad,
+      String? tituloProfesional,
+      String? gradoAcademico,
+      DateTime? fechaIncorporacion,
+      String? observaciones}) async {
     updated = true;
     return _activo;
   }

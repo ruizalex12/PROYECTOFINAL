@@ -57,6 +57,14 @@ class DocenteController extends ChangeNotifier {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    required String sexo,
+    required DateTime fechaNacimiento,
+    required String especialidad,
+    String? tituloProfesional,
+    String? gradoAcademico,
+    DateTime? fechaIncorporacion,
+    String? observaciones,
   }) async {
     _saving = true;
     notifyListeners();
@@ -67,6 +75,14 @@ class DocenteController extends ChangeNotifier {
         apellidos: apellidos,
         ci: ci,
         telefono: telefono,
+        direccion: direccion,
+        sexo: sexo,
+        fechaNacimiento: fechaNacimiento,
+        especialidad: especialidad,
+        tituloProfesional: tituloProfesional,
+        gradoAcademico: gradoAcademico,
+        fechaIncorporacion: fechaIncorporacion,
+        observaciones: observaciones,
       );
       await cargar(busqueda: _busqueda, estado: _estado);
       return null;

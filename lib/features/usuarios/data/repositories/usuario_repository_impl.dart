@@ -24,18 +24,34 @@ class UsuarioRepositoryImpl implements UsuarioRepository {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    SexoUsuario? sexo,
+    String? fechaNacimiento,
     required String correo,
     required String contrasena,
     required UsuarioRol rol,
+    DatosDocenteCreacion? docente,
   }) =>
       _datasource.crear(
         nombres: nombres.trim(),
         apellidos: apellidos.trim(),
         ci: ci.trim(),
         telefono: _optional(telefono),
+        direccion: _optional(direccion),
+        sexo: sexo,
+        fechaNacimiento: _optional(fechaNacimiento),
         correo: correo.trim().toLowerCase(),
         contrasena: contrasena,
         rol: rol,
+        docente: docente == null
+            ? null
+            : DatosDocenteCreacion(
+                especialidad: docente.especialidad.trim(),
+                tituloProfesional: _optional(docente.tituloProfesional),
+                gradoAcademico: _optional(docente.gradoAcademico),
+                fechaIncorporacion: _optional(docente.fechaIncorporacion),
+                observaciones: _optional(docente.observaciones),
+              ),
       );
 
   @override

@@ -8,6 +8,14 @@ class Docente {
     required this.estado,
     required this.fechaRegistro,
     this.telefono,
+    this.direccion,
+    this.sexo,
+    this.fechaNacimiento,
+    this.especialidad,
+    this.tituloProfesional,
+    this.gradoAcademico,
+    this.fechaIncorporacion,
+    this.observaciones,
   });
 
   final String id;
@@ -16,8 +24,23 @@ class Docente {
   final String apellidos;
   final String ci;
   final String? telefono;
+  final String? direccion;
+  final String? sexo;
+  final DateTime? fechaNacimiento;
+  final String? especialidad;
+  final String? tituloProfesional;
+  final String? gradoAcademico;
+  final DateTime? fechaIncorporacion;
+  final String? observaciones;
   final bool estado;
   final DateTime fechaRegistro;
 
   String get nombreCompleto => '$nombres $apellidos'.trim();
+
+  String get sexoLabel => switch (sexo) {
+        'MASCULINO' => 'Masculino',
+        'FEMENINO' => 'Femenino',
+        'OTRO' => 'Otro',
+        _ => 'Sin registrar',
+      };
 }

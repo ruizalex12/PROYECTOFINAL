@@ -9,6 +9,14 @@ abstract interface class DocenteRepository {
     required String apellidos,
     required String ci,
     String? telefono,
+    String? direccion,
+    required String sexo,
+    required DateTime fechaNacimiento,
+    required String especialidad,
+    String? tituloProfesional,
+    String? gradoAcademico,
+    DateTime? fechaIncorporacion,
+    String? observaciones,
   });
 
   Future<Docente> cambiarEstado({required String id, required bool estado});
