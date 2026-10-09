@@ -21,6 +21,8 @@ class ConsultaCalificacionController extends ChangeNotifier {
   CalificacionAdminFilter _filter = const CalificacionAdminFilter();
   CalificacionAdminSummary _summary = const CalificacionAdminSummary.empty();
   String? _errorMessage;
+  bool _refreshing = false;
+  bool _disposed = false;
 
   ConsultaCalificacionViewState get state => _state;
   List<ConsultaCalificacion> get items => List.unmodifiable(_items);
@@ -30,7 +32,11 @@ class ConsultaCalificacionController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get hasFilters => !_filter.isEmpty;
 
-  Future<String?> cargar([CalificacionAdminFilter? filter]) async {
+  Future<String?> cargar([
+    CalificacionAdminFilter? filter,
+    bool silencioso = false,
+  ]) async {
+    if (_refreshing) return null;
     if (filter != null) {
       final validation = CalificacionAdminFilterRules.validar(
         notaMinima: filter.notaMinima,
@@ -39,9 +45,12 @@ class ConsultaCalificacionController extends ChangeNotifier {
       if (validation != null) return validation;
       _filter = filter;
     }
-    _state = ConsultaCalificacionViewState.loading;
-    _errorMessage = null;
-    notifyListeners();
+    _refreshing = true;
+    if (!silencioso) {
+      _state = ConsultaCalificacionViewState.loading;
+      _errorMessage = null;
+      if (!_disposed) notifyListeners();
+    }
     try {
       final results = await Future.wait([
         _repository.listar(_filter),
@@ -55,6 +64,7 @@ class ConsultaCalificacionController extends ChangeNotifier {
           : ConsultaCalificacionViewState.data;
       return null;
     } catch (error) {
+      if (silencioso) return null;
       final mapped = ErrorMapper.message(error);
       _errorMessage =
           mapped == 'No tiene permisos para realizar esta operación.'
@@ -65,9 +75,18 @@ class ConsultaCalificacionController extends ChangeNotifier {
       _state = ConsultaCalificacionViewState.error;
       return _errorMessage;
     } finally {
-      notifyListeners();
+      _refreshing = false;
+      if (!_disposed) notifyListeners();
     }
   }
 
+  Future<String?> actualizarEnSegundoPlano() => cargar(null, true);
+
   Future<String?> limpiarFiltros() => cargar(const CalificacionAdminFilter());
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 }

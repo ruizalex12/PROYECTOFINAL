@@ -34,6 +34,7 @@ void main() {
     expect(error, isNull);
     expect(repository.lastNota, 85.5);
     expect(repository.lastAsignacionId, 5);
+    expect(controller.calificacionesDe(20).single.nota, 85.5);
   });
 
   test('actualiza una calificacion existente', () async {
@@ -55,6 +56,7 @@ void main() {
     expect(error, isNull);
     expect(repository.lastId, existing.id);
     expect(repository.lastNota, 90);
+    expect(controller.calificacionesDe(20).single.nota, 90);
   });
 }
 

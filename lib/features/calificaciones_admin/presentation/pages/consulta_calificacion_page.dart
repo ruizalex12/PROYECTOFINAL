@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
@@ -20,7 +23,8 @@ class ConsultaCalificacionPage extends StatefulWidget {
       _ConsultaCalificacionPageState();
 }
 
-class _ConsultaCalificacionPageState extends State<ConsultaCalificacionPage> {
+class _ConsultaCalificacionPageState extends State<ConsultaCalificacionPage>
+    with WidgetsBindingObserver {
   final _search = TextEditingController();
   final _minima = TextEditingController();
   final _maxima = TextEditingController();
@@ -29,17 +33,56 @@ class _ConsultaCalificacionPageState extends State<ConsultaCalificacionPage> {
   String? _docenteId;
   String? _tipo;
   String? _validation;
+  RealtimeChannel? _realtimeChannel;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ConsultaCalificacionController>().cargar(),
+      (_) {
+        if (!mounted) return;
+        context.read<ConsultaCalificacionController>().cargar();
+        _suscribirRealtime();
+      },
     );
+  }
+
+  void _suscribirRealtime() {
+    if (_realtimeChannel != null) return;
+    final client = Supabase.instance.client;
+    final channel = client.channel(
+      'admin-calificaciones-${identityHashCode(this)}',
+    );
+    _realtimeChannel = channel;
+    channel
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'calificacion',
+          callback: (_) => _actualizarEnSegundoPlano(),
+        )
+        .subscribe();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _actualizarEnSegundoPlano();
+  }
+
+  void _actualizarEnSegundoPlano() {
+    if (!mounted) return;
+    context.read<ConsultaCalificacionController>().actualizarEnSegundoPlano();
   }
 
   @override
   void dispose() {
+    final channel = _realtimeChannel;
+    _realtimeChannel = null;
+    if (channel != null) {
+      unawaited(Supabase.instance.client.removeChannel(channel));
+    }
+    WidgetsBinding.instance.removeObserver(this);
     _search.dispose();
     _minima.dispose();
     _maxima.dispose();

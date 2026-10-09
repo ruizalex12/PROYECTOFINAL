@@ -68,7 +68,7 @@ class CalificacionesController extends ChangeNotifier {
     _saving = true;
     notifyListeners();
     try {
-      await _calificaciones.guardar(
+      final guardada = await _calificaciones.guardar(
         id: existente?.id,
         inscripcionId: inscripcionId,
         asignacionId: asignacionId,
@@ -76,7 +76,15 @@ class CalificacionesController extends ChangeNotifier {
         nota: parsed,
         observacion: observacion,
       );
-      await cargar();
+      final updated = [..._calificacionesItems];
+      final index = updated.indexWhere((item) => item.id == guardada.id);
+      if (index == -1) {
+        updated.add(guardada);
+      } else {
+        updated[index] = guardada;
+      }
+      _calificacionesItems = updated;
+      notifyListeners();
       return null;
     } catch (error) {
       return ErrorMapper.message(error);

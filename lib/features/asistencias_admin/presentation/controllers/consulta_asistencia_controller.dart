@@ -21,6 +21,8 @@ class ConsultaAsistenciaController extends ChangeNotifier {
   AsistenciaAdminFilter _filter = const AsistenciaAdminFilter();
   AsistenciaAdminSummary _summary = const AsistenciaAdminSummary.empty();
   String? _errorMessage;
+  bool _refreshing = false;
+  bool _disposed = false;
 
   ConsultaAsistenciaViewState get state => _state;
   List<ConsultaAsistencia> get items => List.unmodifiable(_items);
@@ -30,11 +32,18 @@ class ConsultaAsistenciaController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get hasFilters => !_filter.isEmpty;
 
-  Future<void> cargar([AsistenciaAdminFilter? filter]) async {
+  Future<void> cargar([
+    AsistenciaAdminFilter? filter,
+    bool silencioso = false,
+  ]) async {
+    if (_refreshing) return;
     if (filter != null) _filter = filter;
-    _state = ConsultaAsistenciaViewState.loading;
-    _errorMessage = null;
-    notifyListeners();
+    _refreshing = true;
+    if (!silencioso) {
+      _state = ConsultaAsistenciaViewState.loading;
+      _errorMessage = null;
+      if (!_disposed) notifyListeners();
+    }
     try {
       final results = await Future.wait([
         _repository.listar(_filter),
@@ -47,6 +56,7 @@ class ConsultaAsistenciaController extends ChangeNotifier {
           ? ConsultaAsistenciaViewState.empty
           : ConsultaAsistenciaViewState.data;
     } catch (error) {
+      if (silencioso) return;
       final mapped = ErrorMapper.message(error);
       _errorMessage =
           mapped == 'No tiene permisos para realizar esta operación.'
@@ -55,11 +65,21 @@ class ConsultaAsistenciaController extends ChangeNotifier {
                   ? mapped
                   : 'No fue posible cargar los registros de asistencia.';
       _state = ConsultaAsistenciaViewState.error;
+    } finally {
+      _refreshing = false;
+      if (!_disposed) notifyListeners();
     }
-    notifyListeners();
   }
 
+  Future<void> actualizarEnSegundoPlano() => cargar(null, true);
+
   Future<void> limpiarFiltros() => cargar(const AsistenciaAdminFilter());
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   AsistenciaAdminFilter crearFiltro({
     String busqueda = '',

@@ -106,7 +106,7 @@ class AsistenciaController extends ChangeNotifier {
     _saving = true;
     notifyListeners();
     try {
-      await _asistencias.guardarTodos(
+      final guardadas = await _asistencias.guardarTodos(
         _items
             .map(
               (item) => Asistencia(
@@ -119,6 +119,18 @@ class AsistenciaController extends ChangeNotifier {
             )
             .toList(growable: false),
       );
+      final porInscripcion = {
+        for (final item in guardadas) item.inscripcionId: item,
+      };
+      _items = _items.map((item) {
+        final guardada = porInscripcion[item.estudiante.inscripcionId];
+        if (guardada == null) return item;
+        return item.copyWith(
+          estado: guardada.estado,
+          observacion: guardada.observacion,
+        );
+      }).toList(growable: false);
+      notifyListeners();
       return null;
     } catch (error) {
       return ErrorMapper.message(error);
