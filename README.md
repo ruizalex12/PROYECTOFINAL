@@ -1,10 +1,19 @@
-# Sistema Web y Móvil de Gestión Académica
+# Desarrollo de un sistema web y móvil de gestión académica
 
 ## Seminario de Formación Ministerial Tarija
 
 Aplicación académica desarrollada con Flutter y Supabase como trabajo final del Diplomado en Desarrollo Web y Aplicaciones Móviles de la Universidad Autónoma Juan Misael Saracho (UAJMS), gestión 2026.
 
-El sistema centraliza la administración de usuarios, docentes, estudiantes y procesos académicos del Seminario de Formación Ministerial Tarija. Funciona en Flutter Web y Android, con PostgreSQL, Supabase Auth, PostgREST y Row Level Security (RLS) como backend.
+El sistema centraliza la administración de usuarios, docentes, estudiantes y procesos académicos del Seminario de Formación Ministerial Tarija. La administración se realiza desde Flutter Web y el trabajo académico del docente desde la aplicación Android. El backend utiliza PostgreSQL, Supabase Auth, PostgREST, Realtime y Row Level Security (RLS).
+
+## Plataformas
+
+| Plataforma | Usuario | Función principal |
+|---|---|---|
+| Flutter Web | Administrador | Gestión y consulta de la información académica |
+| Aplicación Android | Docente | Consulta de asignaturas, registro de asistencia y calificaciones |
+
+Ambas plataformas comparten la misma base de datos. Las consultas administrativas de asistencia y calificaciones se actualizan mediante Supabase Realtime cuando un docente guarda cambios.
 
 ## Roles
 
@@ -21,7 +30,7 @@ Puede gestionar usuarios, docentes, estudiantes, asignaturas, periodos académic
 
 ### Docente
 
-Puede consultar sus asignaciones activas y trabajar únicamente con la información académica autorizada por RLS, incluyendo asistencia y calificaciones de los estudiantes relacionados con sus asignaturas.
+Puede consultar sus asignaciones activas, revisar los estudiantes inscritos y trabajar únicamente con la información académica autorizada por RLS, incluyendo asistencia y calificaciones de los estudiantes relacionados con sus asignaturas.
 
 ## Funcionalidades implementadas
 
@@ -71,10 +80,13 @@ Flutter no calcula ni envía el código durante el alta. La identity y el trigge
 - Inscripciones de estudiantes por asignatura y periodo.
 - Asignación de docentes activos a asignaturas y periodos.
 - Consulta de asignaciones propias para docentes.
+- Consulta de estudiantes inscritos en cada asignatura asignada.
 - Registro y actualización de asistencia.
 - Registro y actualización de calificaciones entre 0 y 100.
 - Consultas administrativas de asistencia y calificaciones.
-- Reportes académicos y exportación CSV en web.
+- Actualización automática de asistencia y calificaciones administrativas mediante Supabase Realtime.
+- Reportes de inscripciones, asistencia, calificaciones y asignaciones docentes.
+- Exportación CSV de reportes en web.
 
 Las bajas son lógicas mediante `estado=false`; no se eliminan los registros académicos.
 
@@ -122,6 +134,15 @@ lib/
 |-- shared/
 |-- app.dart
 `-- main.dart
+
+supabase/
+|-- functions/
+|-- migrations/
+|-- policies/
+`-- tests/
+
+api/
+`-- v1/salud.js
 ```
 
 Cada feature puede contener:
@@ -135,7 +156,7 @@ Cada feature puede contener:
 - Flutter y Dart.
 - Material 3 y Provider.
 - Supabase Flutter y Supabase Auth.
-- PostgreSQL, PostgREST y Row Level Security.
+- PostgreSQL, PostgREST, Realtime y Row Level Security.
 - Supabase Edge Functions con Deno/TypeScript.
 - Vercel para despliegue web.
 
@@ -149,6 +170,18 @@ SUPABASE_PUBLISHABLE_KEY
 ```
 
 Crear `config/local.json` a partir de `config/local.example.json`:
+
+```bash
+cp config/local.example.json config/local.json
+```
+
+En Windows PowerShell puede utilizarse:
+
+```powershell
+Copy-Item config/local.example.json config/local.json
+```
+
+Luego completar únicamente los valores públicos:
 
 ```json
 {
@@ -186,6 +219,8 @@ Ejecutar en Android:
 flutter run --dart-define-from-file=config/local.json
 ```
 
+Al iniciar sesión, el sistema dirige automáticamente al usuario al panel correspondiente a su rol. No existe inicio de sesión para estudiantes.
+
 ## Supabase
 
 ### Migraciones y auditorías
@@ -197,6 +232,22 @@ El historial incluye migraciones que anteriormente fueron aplicadas manualmente.
 Las auditorías SQL están en `supabase/tests/`. Varias se ejecutan dentro de una transacción y finalizan con `ROLLBACK`.
 
 > Las secuencias PostgreSQL no son transaccionales. Una auditoría puede consumir valores y dejar saltos válidos en códigos `ESTxxxx`, aunque no deje filas de prueba persistentes.
+
+Después de verificar que el historial local coincide con el remoto, las migraciones pendientes pueden aplicarse con:
+
+```bash
+supabase db push
+```
+
+### Realtime
+
+Las tablas `public.asistencia` y `public.calificacion` se incorporan de forma idempotente a la publicación `supabase_realtime` mediante:
+
+```text
+supabase/migrations/20261008_001_habilitar_realtime_asistencia_calificacion.sql
+```
+
+La versión web administrativa escucha eventos `INSERT`, `UPDATE` y `DELETE`. Cuando recibe un cambio, reutiliza la consulta silenciosa de cada controlador, conserva los filtros activos y mantiene visible la tabla durante la sincronización. Realtime respeta las políticas RLS y no utiliza `service_role` en Flutter.
 
 ### Edge Functions
 
@@ -221,6 +272,13 @@ git diff --check
 ```
 
 La suite actual contiene **198 pruebas aprobadas**, incluyendo controladores, modelos, payloads y widgets responsive.
+
+Última validación completa registrada:
+
+```text
+flutter analyze                    → Sin observaciones
+flutter test --reporter expanded   → 198 pruebas aprobadas
+```
 
 ## Compilación
 
@@ -265,6 +323,10 @@ Implementado en `api/v1/salud.js`.
 ## Alcance
 
 El proyecto está orientado a gestión académica. No incluye aula virtual, entrega de tareas, videoclases, foros, mensajería interna, pagos, facturación, biblioteca ni gestión médica o psicológica.
+
+## Documentación complementaria
+
+La carpeta `docs/` contiene material de apoyo sobre la adaptación del proyecto, la configuración de Supabase y la solución de errores comunes. El esquema, las políticas y las auditorías SQL se mantienen dentro de `supabase/` para facilitar su revisión académica.
 
 ## Autor
 
