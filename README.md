@@ -11,7 +11,7 @@ El sistema centraliza la administración de usuarios, docentes, estudiantes y pr
 | Plataforma | Usuario | Función principal |
 |---|---|---|
 | Flutter Web | Administrador | Gestión y consulta de la información académica |
-| Aplicación Android | Docente | Consulta de asignaturas, registro de asistencia y calificaciones |
+| Aplicación Android | Docente | Resumen académico de sus asignaturas, asistencia y calificaciones |
 
 Ambas plataformas comparten la misma base de datos. Las consultas administrativas de asistencia y calificaciones se actualizan mediante Supabase Realtime cuando un docente guarda cambios.
 
@@ -30,7 +30,7 @@ Puede gestionar usuarios, docentes, estudiantes, asignaturas, periodos académic
 
 ### Docente
 
-Puede consultar sus asignaciones activas, revisar los estudiantes inscritos y trabajar únicamente con la información académica autorizada por RLS, incluyendo asistencia y calificaciones de los estudiantes relacionados con sus asignaturas.
+Puede consultar sus asignaciones activas, abrir el resumen académico de cada asignatura, revisar los estudiantes inscritos y trabajar únicamente con la información académica autorizada por RLS, incluyendo asistencia y calificaciones de los estudiantes relacionados con sus asignaturas.
 
 ## Funcionalidades implementadas
 
@@ -80,6 +80,7 @@ Flutter no calcula ni envía el código durante el alta. La identity y el trigge
 - Inscripciones de estudiantes por asignatura y periodo.
 - Asignación de docentes activos a asignaturas y periodos.
 - Consulta de asignaciones propias para docentes.
+- Resumen académico por asignatura para docentes.
 - Consulta de estudiantes inscritos en cada asignatura asignada.
 - Registro y actualización de asistencia.
 - Registro y actualización de calificaciones entre 0 y 100.
@@ -89,6 +90,31 @@ Flutter no calcula ni envía el código durante el alta. La identity y el trigge
 - Exportación CSV de reportes en web.
 
 Las bajas son lógicas mediante `estado=false`; no se eliminan los registros académicos.
+
+### Resumen académico del Docente
+
+El flujo de consulta es:
+
+```text
+Mis asignaturas
+    → seleccionar asignatura
+    → Resumen académico
+```
+
+La vista muestra:
+
+- nombre y código de la asignatura;
+- periodo académico y estado de la asignación;
+- total de estudiantes con inscripción activa;
+- estudiante, código y estado de inscripción;
+- registros presentes, ausentes y con licencia;
+- porcentaje de asistencia por estudiante y porcentaje general;
+- cada calificación registrada, su tipo de evaluación y el promedio correspondiente;
+- estados de carga, error, lista vacía, sin asistencia y sin calificación.
+
+Los porcentajes se calculan como registros `PRESENTE` sobre el total de registros de asistencia existentes. Los promedios se calculan en Flutter a partir de las calificaciones disponibles. Ningún valor derivado se almacena en PostgreSQL.
+
+La pantalla reutiliza las consultas existentes de asignaciones propias, estudiantes por asignación, asistencia y calificaciones. Antes de mostrar información, la asignación solicitada se valida contra las asignaciones activas que RLS permite devolver al usuario autenticado. No se añadieron tablas, políticas RLS, permisos ni consultas SQL nuevas.
 
 ## Modelo de usuarios y docentes
 
@@ -128,6 +154,7 @@ lib/
 |   |-- asistencias_admin/
 |   |-- calificaciones/
 |   |-- calificaciones_admin/
+|   |-- resumen_academico/
 |   |-- reportes/
 |   `-- dashboard/
 |-- routes/
@@ -271,13 +298,15 @@ flutter build web --release --no-pub --dart-define-from-file=config/local.json
 git diff --check
 ```
 
-La suite actual contiene **198 pruebas aprobadas**, incluyendo controladores, modelos, payloads y widgets responsive.
+La suite actual contiene **214 pruebas aprobadas**, incluyendo controladores, modelos, payloads, cálculos académicos y widgets responsive.
 
 Última validación completa registrada:
 
 ```text
-flutter analyze                    → Sin observaciones
-flutter test --reporter expanded   → 198 pruebas aprobadas
+flutter analyze --no-pub           → Sin observaciones
+flutter test                       → 214 pruebas aprobadas
+flutter build web --release --no-pub --dart-define-from-file=config/local.json
+                                   → Compilación exitosa
 ```
 
 ## Compilación
@@ -285,16 +314,24 @@ flutter test --reporter expanded   → 198 pruebas aprobadas
 Web:
 
 ```bash
-flutter build web --release --dart-define-from-file=config/local.json
+flutter build web --release --no-pub --dart-define-from-file=config/local.json
 ```
 
 Android APK:
 
 ```bash
-flutter build apk --release --dart-define-from-file=config/local.json
+flutter build apk --release --no-pub --dart-define-from-file=config/local.json
 ```
 
 El APK se genera normalmente en `build/app/outputs/flutter-apk/app-release.apk`.
+
+La copia de entrega vigente se encuentra en:
+
+```text
+APK/SFM_Tarija_1.0.5_release.apk
+```
+
+> No se debe omitir `--dart-define-from-file=config/local.json`. Una APK compilada sin ese argumento inicia en la pantalla **Configuración requerida** porque no contiene `SUPABASE_URL` ni `SUPABASE_PUBLISHABLE_KEY`.
 
 ## Despliegue web en Vercel
 
@@ -317,6 +354,7 @@ Implementado en `api/v1/salud.js`.
 - Helpers `SECURITY DEFINER` para comprobar roles sin recursión RLS.
 - El administrador activo gestiona catálogos y perfiles.
 - El docente solo accede a información relacionada con sus asignaciones.
+- El resumen académico valida la asignación contra PostgreSQL/RLS y no utiliza parámetros visuales para conceder acceso.
 - No se exponen claves privadas, contraseñas ni tokens en Flutter o logs.
 - No se utiliza `DELETE` para bajas funcionales.
 
