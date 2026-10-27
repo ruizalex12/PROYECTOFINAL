@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
 import '../../../../shared/widgets/app_states.dart';
+import '../../../../shared/widgets/paginated_view.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../domain/entities/usuario.dart';
@@ -23,6 +24,7 @@ class _UsuariosPageState extends State<UsuariosPage> {
   final _searchController = TextEditingController();
   UsuarioRolFiltro _rol = UsuarioRolFiltro.todos;
   UsuarioEstadoFiltro _estado = UsuarioEstadoFiltro.todos;
+  int _currentPage = 1;
 
   @override
   void initState() {
@@ -38,17 +40,21 @@ class _UsuariosPageState extends State<UsuariosPage> {
     super.dispose();
   }
 
-  Future<void> _buscar() => context.read<UsuarioController>().cargar(
-        busqueda: _searchController.text,
-        rol: _rol.value,
-        estado: _estado.value,
-      );
+  Future<void> _buscar() {
+    setState(() => _currentPage = 1);
+    return context.read<UsuarioController>().cargar(
+          busqueda: _searchController.text,
+          rol: _rol.value,
+          estado: _estado.value,
+        );
+  }
 
   Future<void> _limpiar() async {
     _searchController.clear();
     setState(() {
       _rol = UsuarioRolFiltro.todos;
       _estado = UsuarioEstadoFiltro.todos;
+      _currentPage = 1;
     });
     await context.read<UsuarioController>().cargar(reset: true);
   }
@@ -184,57 +190,62 @@ class _UsuariosPageState extends State<UsuariosPage> {
         UsuarioViewState.data => _data(controller.items),
       };
 
-  Widget _data(List<Usuario> items) => LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth >= 900) {
-            return SingleChildScrollView(
-              child: UsuarioTable(
-                items: items,
-                onEdit: _form,
-                onToggle: _toggle,
-              ),
-            );
-          }
-          return ListView.separated(
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [
-                        Expanded(
-                          child: Text(item.nombreCompleto,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w700)),
-                        ),
-                        StatusBadge(active: item.estado),
-                      ]),
-                      const SizedBox(height: 8),
-                      Text(item.correo),
-                      Text('CI: ${item.ci}'),
-                      Text('Rol: ${item.rol.label}'),
-                      const Divider(height: 24),
-                      Wrap(alignment: WrapAlignment.end, children: [
-                        TextButton(
-                          onPressed: () => _form(item),
-                          child: const Text('Editar'),
-                        ),
-                        TextButton(
-                          onPressed: () => _toggle(item),
-                          child: Text(item.estado ? 'Desactivar' : 'Reactivar'),
-                        ),
-                      ]),
-                    ],
+  Widget _data(List<Usuario> items) => PaginatedView<Usuario>(
+      items: items,
+      currentPage: _currentPage,
+      onPageChanged: (page) => setState(() => _currentPage = page),
+      builder: (context, items) => LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth >= 900) {
+                return SingleChildScrollView(
+                  child: UsuarioTable(
+                    items: items,
+                    onEdit: _form,
+                    onToggle: _toggle,
                   ),
-                ),
+                );
+              }
+              return ListView.separated(
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Expanded(
+                              child: Text(item.nombreCompleto,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700)),
+                            ),
+                            StatusBadge(active: item.estado),
+                          ]),
+                          const SizedBox(height: 8),
+                          Text(item.correo),
+                          Text('CI: ${item.ci}'),
+                          Text('Rol: ${item.rol.label}'),
+                          const Divider(height: 24),
+                          Wrap(alignment: WrapAlignment.end, children: [
+                            TextButton(
+                              onPressed: () => _form(item),
+                              child: const Text('Editar'),
+                            ),
+                            TextButton(
+                              onPressed: () => _toggle(item),
+                              child: Text(
+                                  item.estado ? 'Desactivar' : 'Reactivar'),
+                            ),
+                          ]),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      );
+          ));
 }

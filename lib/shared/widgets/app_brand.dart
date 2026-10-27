@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_theme.dart';
-
 class AppBrand extends StatelessWidget {
   const AppBrand({super.key, this.compact = false, this.light = false});
 
@@ -10,7 +8,11 @@ class AppBrand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = light ? Colors.white : AppColors.ink;
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = light ? Colors.white : scheme.onSurface;
+    final secondaryForeground =
+        light ? Colors.white70 : scheme.onSurfaceVariant;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -18,15 +20,25 @@ class AppBrand extends StatelessWidget {
           width: compact ? 42 : 58,
           height: compact ? 42 : 58,
           decoration: BoxDecoration(
-            color: light ? Colors.white12 : const Color(0xFFE8F4F0),
+            color: light
+                ? Colors.white12
+                : dark
+                    ? scheme.primaryContainer.withValues(alpha: .45)
+                    : const Color(0xFFE8F4F0),
             borderRadius: BorderRadius.circular(compact ? 12 : 16),
-            border:
-                Border.all(color: light ? Colors.white24 : AppColors.border),
+            border: Border.all(
+              color: light ? Colors.white24 : scheme.outlineVariant,
+            ),
           ),
-          child: Icon(
-            Icons.auto_stories_rounded,
-            color: light ? Colors.white : AppColors.primary,
-            size: compact ? 25 : 34,
+          child: Padding(
+            padding: EdgeInsets.all(compact ? 4 : 5),
+            child: Image.asset(
+              'assets/images/logo_sfm_tarija.png',
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              semanticLabel:
+                  'Logo del Seminario de Formación Ministerial Tarija',
+            ),
           ),
         ),
         const SizedBox(width: 13),
@@ -52,7 +64,7 @@ class AppBrand extends StatelessWidget {
                   'Seminario de Formación Ministerial Tarija',
                   maxLines: 2,
                   style: TextStyle(
-                    color: light ? Colors.white70 : AppColors.muted,
+                    color: secondaryForeground,
                     fontSize: 13,
                   ),
                 ),

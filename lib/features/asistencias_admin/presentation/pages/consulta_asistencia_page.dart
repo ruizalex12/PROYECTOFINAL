@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
 import '../../../../shared/widgets/app_states.dart';
+import '../../../../shared/widgets/pagination_bar.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../asistencia/domain/entities/asistencia.dart';
 import '../../domain/entities/consulta_asistencia.dart';
@@ -33,6 +34,7 @@ class _ConsultaAsistenciaPageState extends State<ConsultaAsistenciaPage>
   EstadoAsistencia? _estado;
   DateTime? _fechaDesde;
   DateTime? _fechaHasta;
+  int _currentPage = 1;
 
   @override
   void initState() {
@@ -87,6 +89,7 @@ class _ConsultaAsistenciaPageState extends State<ConsultaAsistenciaPage>
   }
 
   Future<void> _consultar() {
+    setState(() => _currentPage = 1);
     final controller = context.read<ConsultaAsistenciaController>();
     return controller.cargar(controller.crearFiltro(
       busqueda: _searchController.text,
@@ -108,6 +111,7 @@ class _ConsultaAsistenciaPageState extends State<ConsultaAsistenciaPage>
       _estado = null;
       _fechaDesde = null;
       _fechaHasta = null;
+      _currentPage = 1;
     });
     await context.read<ConsultaAsistenciaController>().limpiarFiltros();
   }
@@ -208,13 +212,22 @@ class _ConsultaAsistenciaPageState extends State<ConsultaAsistenciaPage>
         ConsultaAsistenciaViewState.data => _data(controller.items),
       };
 
-  Widget _data(List<ConsultaAsistencia> items) => LayoutBuilder(
+  Widget _data(List<ConsultaAsistencia> items) {
+    const pageSize = 10;
+    final totalPages = (items.length / pageSize).ceil();
+    final page = _currentPage.clamp(1, totalPages);
+    final pageItems = items
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .toList(growable: false);
+    return Column(children: [
+      LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth >= 950) {
-            return AsistenciaAdminTable(items: items, onDetail: _detail);
+            return AsistenciaAdminTable(items: pageItems, onDetail: _detail);
           }
           return Column(
-            children: items
+            children: pageItems
                 .map((item) => Card(
                       child: ListTile(
                         title: Text(item.estudianteNombre),
@@ -234,7 +247,17 @@ class _ConsultaAsistenciaPageState extends State<ConsultaAsistenciaPage>
                 .toList(growable: false),
           );
         },
-      );
+      ),
+      if (totalPages > 1) ...[
+        const SizedBox(height: 16),
+        PaginationBar(
+          currentPage: page,
+          totalPages: totalPages,
+          onPageChanged: (value) => setState(() => _currentPage = value),
+        ),
+      ],
+    ]);
+  }
 
   String _date(DateTime value) => '${value.day.toString().padLeft(2, '0')}/'
       '${value.month.toString().padLeft(2, '0')}/${value.year}';

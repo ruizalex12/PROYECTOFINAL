@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../shared/widgets/app_states.dart';
+import '../../../../shared/widgets/paginated_view.dart';
 import '../../../asignaciones_docente/domain/entities/asignacion_docente.dart';
 import '../../domain/entities/asistencia.dart';
 import '../controllers/asistencia_controller.dart';
@@ -16,6 +17,7 @@ class AsistenciaPage extends StatefulWidget {
 }
 
 class _AsistenciaPageState extends State<AsistenciaPage> {
+  int _currentPage = 1;
   @override
   void initState() {
     super.initState();
@@ -38,7 +40,10 @@ class _AsistenciaPageState extends State<AsistenciaPage> {
       firstDate: widget.asignacion.periodo.fechaInicio,
       lastDate: widget.asignacion.periodo.fechaFin,
     );
-    if (value != null) await controller.cambiarFecha(value);
+    if (value != null) {
+      setState(() => _currentPage = 1);
+      await controller.cambiarFecha(value);
+    }
   }
 
   Future<void> _guardar(AsistenciaController controller) async {
@@ -114,16 +119,28 @@ class _AsistenciaPageState extends State<AsistenciaPage> {
                 'No fue posible cargar la asistencia.',
             onRetry: controller.cargar,
           ),
-        AsistenciaViewState.data => ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: controller.items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => _AsistenciaItem(
-              key: ValueKey(controller.items[index].estudiante.inscripcionId),
-              item: controller.items[index],
-              onEstado: (value) => controller.cambiarEstado(index, value),
-              onObservacion: (value) =>
-                  controller.cambiarObservacion(index, value),
+        AsistenciaViewState.data => PaginatedView<AsistenciaBorrador>(
+            items: controller.items,
+            currentPage: _currentPage,
+            onPageChanged: (page) => setState(() => _currentPage = page),
+            builder: (context, items) => ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final sourceIndex = controller.items.indexWhere((candidate) =>
+                    candidate.estudiante.inscripcionId ==
+                    item.estudiante.inscripcionId);
+                return _AsistenciaItem(
+                  key: ValueKey(item.estudiante.inscripcionId),
+                  item: item,
+                  onEstado: (value) =>
+                      controller.cambiarEstado(sourceIndex, value),
+                  onObservacion: (value) =>
+                      controller.cambiarObservacion(sourceIndex, value),
+                );
+              },
             ),
           ),
       };

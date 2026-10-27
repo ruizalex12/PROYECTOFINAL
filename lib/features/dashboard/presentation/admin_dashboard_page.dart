@@ -6,6 +6,8 @@ import '../../../routes/route_names.dart';
 import '../../../shared/layouts/admin_shell.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
+import '../../docentes/domain/entities/docente.dart';
+import '../../docentes/domain/repositories/docente_repository.dart';
 import '../../estudiantes/domain/repositories/estudiante_repository.dart';
 import '../../periodos/domain/entities/periodo_academico.dart';
 import '../../periodos/domain/repositories/periodo_academico_repository.dart';
@@ -20,6 +22,8 @@ class AdminDashboardPage extends StatefulWidget {
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   EstudianteRepository? _estudianteRepository;
   Future<int>? _estudiantesActivos;
+  DocenteRepository? _docenteRepository;
+  Future<List<Docente>>? _docentesActivos;
   PeriodoAcademicoRepository? _periodoRepository;
   Future<List<PeriodoAcademico>>? _periodosActivos;
 
@@ -30,6 +34,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     if (!identical(repository, _estudianteRepository)) {
       _estudianteRepository = repository;
       _estudiantesActivos = repository.contarActivos();
+    }
+    final docenteRepository = context.read<DocenteRepository>();
+    if (!identical(docenteRepository, _docenteRepository)) {
+      _docenteRepository = docenteRepository;
+      _docentesActivos = docenteRepository.listar(estado: true);
     }
     final periodoRepository = context.read<PeriodoAcademicoRepository>();
     if (!identical(periodoRepository, _periodoRepository)) {
@@ -86,12 +95,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             ),
                           ),
                         ),
-                        _SummaryCard(
+                        FutureBuilder<List<Docente>>(
+                          future: _docentesActivos,
+                          builder: (context, snapshot) => _SummaryCard(
                             width: width,
-                            label: 'Docentes',
-                            value: '—',
+                            label: 'Docentes activos',
+                            value: snapshot.hasData
+                                ? '${snapshot.data!.length}'
+                                : '—',
                             icon: Icons.badge_outlined,
-                            color: const Color(0xFF8160B5)),
+                            color: const Color(0xFF8160B5),
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              RouteNames.adminDocentes,
+                            ),
+                          ),
+                        ),
                         _SummaryCard(
                             width: width,
                             label: 'Asignaturas',
@@ -211,23 +230,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFEAF4F1),
-                      borderRadius: BorderRadius.circular(16)),
-                  child: const Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.info_outline_rounded,
-                            color: AppColors.primary),
-                        SizedBox(width: 12),
-                        Expanded(
-                            child: Text(
-                                'Los demás módulos están preparados en la navegación y se habilitarán progresivamente sin afectar la vertical E2.',
-                                style: TextStyle(height: 1.45)))
-                      ]),
-                ),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
 import '../../../../shared/widgets/app_states.dart';
+import '../../../../shared/widgets/paginated_view.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../domain/entities/periodo_academico.dart';
@@ -23,6 +24,7 @@ class PeriodosAcademicosPage extends StatefulWidget {
 class _PeriodosAcademicosPageState extends State<PeriodosAcademicosPage> {
   final _searchController = TextEditingController();
   PeriodoEstadoFiltro _estado = PeriodoEstadoFiltro.todos;
+  int _currentPage = 1;
 
   @override
   void initState() {
@@ -38,14 +40,20 @@ class _PeriodosAcademicosPageState extends State<PeriodosAcademicosPage> {
     super.dispose();
   }
 
-  Future<void> _buscar() => context.read<PeriodoAcademicoController>().cargar(
-        busqueda: _searchController.text,
-        estado: _estado.value,
-      );
+  Future<void> _buscar() {
+    setState(() => _currentPage = 1);
+    return context.read<PeriodoAcademicoController>().cargar(
+          busqueda: _searchController.text,
+          estado: _estado.value,
+        );
+  }
 
   Future<void> _limpiar() async {
     _searchController.clear();
-    setState(() => _estado = PeriodoEstadoFiltro.todos);
+    setState(() {
+      _estado = PeriodoEstadoFiltro.todos;
+      _currentPage = 1;
+    });
     await context.read<PeriodoAcademicoController>().cargar(reset: true);
   }
 
@@ -190,68 +198,72 @@ class _PeriodosAcademicosPageState extends State<PeriodosAcademicosPage> {
         PeriodoAcademicoViewState.data => _data(controller.items),
       };
 
-  Widget _data(List<PeriodoAcademico> items) => LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth >= 760) {
-            return SingleChildScrollView(
-              child: PeriodoAcademicoTable(
-                items: items,
-                onEdit: _form,
-                onToggle: _toggle,
-              ),
-            );
-          }
-          return ListView.separated(
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.nombre,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                          StatusBadge(active: item.estado),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text('Inicio: ${_date(item.fechaInicio)}'),
-                      Text(
-                        'Finalización: ${_date(item.fechaFin)}',
-                        style: const TextStyle(color: AppColors.muted),
-                      ),
-                      const Divider(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => _form(item),
-                            child: const Text('Editar'),
-                          ),
-                          TextButton(
-                            onPressed: () => _toggle(item),
-                            child: Text(
-                              item.estado ? 'Desactivar' : 'Reactivar',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+  Widget _data(List<PeriodoAcademico> items) => PaginatedView<PeriodoAcademico>(
+      items: items,
+      currentPage: _currentPage,
+      onPageChanged: (page) => setState(() => _currentPage = page),
+      builder: (context, items) => LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth >= 760) {
+                return SingleChildScrollView(
+                  child: PeriodoAcademicoTable(
+                    items: items,
+                    onEdit: _form,
+                    onToggle: _toggle,
                   ),
-                ),
+                );
+              }
+              return ListView.separated(
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.nombre,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              StatusBadge(active: item.estado),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text('Inicio: ${_date(item.fechaInicio)}'),
+                          Text(
+                            'Finalización: ${_date(item.fechaFin)}',
+                            style: const TextStyle(color: AppColors.muted),
+                          ),
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () => _form(item),
+                                child: const Text('Editar'),
+                              ),
+                              TextButton(
+                                onPressed: () => _toggle(item),
+                                child: Text(
+                                  item.estado ? 'Desactivar' : 'Reactivar',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      );
+          ));
 }

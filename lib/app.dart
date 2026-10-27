@@ -57,7 +57,7 @@ class ProyectoFinalApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'EduGestion 360',
+      title: 'SFM Tarija',
       themeMode: theme.themeMode,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  pdf: ^3.13.1
+  printing: ^5.15.1
   provider: ">=6.1.2 <7.0.0"
   shared_preferences: ">=2.3.3 <3.0.0"
   supabase_flutter: ">=2.15.4 <3.0.0"
@@ -20,3 +22,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/logo_sfm_tarija.png
+    - assets/images/comunidad_academica.png

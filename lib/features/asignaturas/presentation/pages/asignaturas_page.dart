@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
 import '../../../../shared/widgets/app_states.dart';
+import '../../../../shared/widgets/pagination_bar.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../domain/entities/asignatura.dart';
 import '../controllers/asignatura_controller.dart';
@@ -22,8 +23,10 @@ class AsignaturasPage extends StatefulWidget {
 }
 
 class _AsignaturasPageState extends State<AsignaturasPage> {
+  static const _pageSize = 10;
   final _busqueda = TextEditingController();
   _EstadoFiltro _filtro = _EstadoFiltro.todas;
+  int _currentPage = 1;
 
   @override
   void initState() {
@@ -137,8 +140,11 @@ class _AsignaturasPageState extends State<AsignaturasPage> {
                 _Filters(
                   controller: _busqueda,
                   selected: _filtro,
-                  onSearch: (_) => setState(() {}),
-                  onFilter: (value) => setState(() => _filtro = value),
+                  onSearch: (_) => setState(() => _currentPage = 1),
+                  onFilter: (value) => setState(() {
+                    _filtro = value;
+                    _currentPage = 1;
+                  }),
                 ),
                 const SizedBox(height: 20),
                 Expanded(child: _buildState(controller)),
@@ -165,10 +171,21 @@ class _AsignaturasPageState extends State<AsignaturasPage> {
                 message: controller.errorMessage ??
                     'No fue posible cargar las asignaturas.',
                 onRetry: controller.cargar)),
-        AsignaturaViewState.data => _DataView(
-            items: _filtrar(controller.items),
-            onEdit: _form,
-            onToggle: _toggle),
+        AsignaturaViewState.data => Builder(builder: (context) {
+            final filteredItems = _filtrar(controller.items);
+            final totalPages = filteredItems.isEmpty
+                ? 1
+                : (filteredItems.length / _pageSize).ceil();
+            final page = _currentPage.clamp(1, totalPages);
+            return _DataView(
+              items: filteredItems,
+              currentPage: page,
+              pageSize: _pageSize,
+              onPageChanged: (value) => setState(() => _currentPage = value),
+              onEdit: _form,
+              onToggle: _toggle,
+            );
+          }),
       };
 }
 
@@ -244,8 +261,16 @@ class _Filters extends StatelessWidget {
 
 class _DataView extends StatelessWidget {
   const _DataView(
-      {required this.items, required this.onEdit, required this.onToggle});
+      {required this.items,
+      required this.currentPage,
+      required this.pageSize,
+      required this.onPageChanged,
+      required this.onEdit,
+      required this.onToggle});
   final List<Asignatura> items;
+  final int currentPage;
+  final int pageSize;
+  final ValueChanged<int> onPageChanged;
   final ValueChanged<Asignatura> onEdit;
   final ValueChanged<Asignatura> onToggle;
 
@@ -258,19 +283,31 @@ class _DataView extends StatelessWidget {
               title: 'Sin resultados',
               message: 'Cambie la búsqueda o los filtros seleccionados.'));
     }
+    final totalPages = (items.length / pageSize).ceil();
+    final start = (currentPage - 1) * pageSize;
+    final pageItems = items.skip(start).take(pageSize).toList(growable: false);
     return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth >= 760) {
-        return SingleChildScrollView(
-            child: AsignaturaTable(
-                items: items, onEdit: onEdit, onToggle: onToggle));
-      }
-      return ListView.separated(
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (_, index) => AsignaturaCard(
-              asignatura: items[index],
-              onEdit: () => onEdit(items[index]),
-              onToggle: () => onToggle(items[index])));
+      final listing = constraints.maxWidth >= 760
+          ? SingleChildScrollView(
+              child: AsignaturaTable(
+                  items: pageItems, onEdit: onEdit, onToggle: onToggle))
+          : ListView.separated(
+              itemCount: pageItems.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, index) => AsignaturaCard(
+                  asignatura: pageItems[index],
+                  onEdit: () => onEdit(pageItems[index]),
+                  onToggle: () => onToggle(pageItems[index])));
+      return Column(children: [
+        Expanded(child: listing),
+        if (totalPages > 1) ...[
+          const SizedBox(height: 16),
+          PaginationBar(
+              currentPage: currentPage,
+              totalPages: totalPages,
+              onPageChanged: onPageChanged),
+        ],
+      ]);
     });
   }
 }

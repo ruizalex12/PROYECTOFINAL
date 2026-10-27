@@ -279,7 +279,7 @@ class _InscripcionesPageState extends State<InscripcionesPage> {
                       '${item.asignaturaCodigo} · ${item.asignaturaNombre}',
                     ),
                     Text(
-                      '${item.periodoNombre} · ${_date(item.fechaInscripcion)}',
+                      _date(item.fechaInscripcion),
                       style: const TextStyle(color: AppColors.muted),
                     ),
                     const Divider(height: 24),

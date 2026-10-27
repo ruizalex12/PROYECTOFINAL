@@ -121,11 +121,12 @@ class _Navigation extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(12, 4, 12, 10),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
                     child: Text('MENÚ PRINCIPAL',
                         style: TextStyle(
-                            color: AppColors.muted,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.1)),
@@ -136,19 +137,23 @@ class _Navigation extends StatelessWidget {
                       child: ListTile(
                         dense: true,
                         selected: item.route == selectedRoute,
-                        selectedTileColor:
-                            AppColors.primary.withValues(alpha: .09),
+                        selectedTileColor: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: .55),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                         leading: Icon(item.icon,
                             color: item.route == selectedRoute
-                                ? AppColors.primary
-                                : AppColors.muted,
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                             size: 21),
                         title: Text(item.label,
                             style: TextStyle(
                                 color: item.route == selectedRoute
-                                    ? AppColors.primary
+                                    ? Theme.of(context).colorScheme.primary
                                     : foreground.withValues(alpha: .72),
                                 fontWeight: item.route == selectedRoute
                                     ? FontWeight.w700
@@ -193,7 +198,11 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: const Border(bottom: BorderSide(color: AppColors.border)),
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -215,13 +224,15 @@ class _TopBar extends StatelessWidget {
           const SizedBox(width: 18),
           CircleAvatar(
             radius: 19,
-            backgroundColor: const Color(0xFFE3F1ED),
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             child: Text(
               (profile?.nombres.isNotEmpty ?? false)
                   ? profile!.nombres[0].toUpperCase()
                   : 'A',
-              style: const TextStyle(
-                  color: AppColors.primary, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -232,8 +243,13 @@ class _TopBar extends StatelessWidget {
               children: [
                 Text(profile?.nombreCompleto ?? 'Administrador',
                     style: const TextStyle(fontWeight: FontWeight.w700)),
-                const Text('Administrador',
-                    style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(
+                  'Administrador',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
         ],

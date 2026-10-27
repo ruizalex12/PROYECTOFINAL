@@ -47,34 +47,47 @@ class _EstudiantesAsignacionPageState extends State<EstudiantesAsignacionPage> {
                   const SizedBox(height: 4),
                   Text(widget.asignacion.periodo.nombre),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () => Navigator.pushNamed(
-                            context,
-                            RouteNames.docenteAsistencia(widget.asignacion.id),
-                            arguments: widget.asignacion,
-                          ),
-                          icon: const Icon(Icons.fact_check_outlined),
-                          label: const Text('Asistencia'),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final compact = constraints.maxWidth < 430;
+                      final asistencia = FilledButton.icon(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          RouteNames.docenteAsistencia(widget.asignacion.id),
+                          arguments: widget.asignacion,
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => Navigator.pushNamed(
-                            context,
-                            RouteNames.docenteCalificaciones(
-                              widget.asignacion.id,
-                            ),
-                            arguments: widget.asignacion,
+                        icon: const Icon(Icons.fact_check_outlined),
+                        label: const Text('Asistencia'),
+                      );
+                      final calificaciones = OutlinedButton.icon(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          RouteNames.docenteCalificaciones(
+                            widget.asignacion.id,
                           ),
-                          icon: const Icon(Icons.grading_outlined),
-                          label: const Text('Calificaciones'),
+                          arguments: widget.asignacion,
                         ),
-                      ),
-                    ],
+                        icon: const Icon(Icons.grading_outlined),
+                        label: const Text('Calificaciones'),
+                      );
+                      if (compact) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            asistencia,
+                            const SizedBox(height: 8),
+                            calificaciones,
+                          ],
+                        );
+                      }
+                      return Row(
+                        children: [
+                          Expanded(child: asistencia),
+                          const SizedBox(width: 10),
+                          Expanded(child: calificaciones),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -107,19 +120,29 @@ class _EstudiantesAsignacionPageState extends State<EstudiantesAsignacionPage> {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: controller.items.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final estudiante = controller.items[index];
-                return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                  leading: CircleAvatar(
-                    child: Text(estudiante.nombres[0].toUpperCase()),
-                  ),
-                  title: Text(estudiante.nombreCompleto),
-                  subtitle: Text(
-                    estudiante.codigo?.isNotEmpty == true
-                        ? '${estudiante.codigo} · CI ${estudiante.ci}'
-                        : 'CI ${estudiante.ci}',
+                return Card(
+                  margin: EdgeInsets.zero,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    leading: CircleAvatar(
+                      child: Text(estudiante.nombres[0].toUpperCase()),
+                    ),
+                    title: Text(
+                      estudiante.nombreCompleto,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      estudiante.codigo?.isNotEmpty == true
+                          ? '${estudiante.codigo} · CI ${estudiante.ci}'
+                          : 'CI ${estudiante.ci}',
+                    ),
                   ),
                 );
               },

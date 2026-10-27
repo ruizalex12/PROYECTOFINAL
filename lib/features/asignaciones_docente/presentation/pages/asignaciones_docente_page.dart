@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
 import '../../../../shared/widgets/app_states.dart';
+import '../../../../shared/widgets/paginated_view.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../domain/entities/asignacion_docente.dart';
@@ -28,6 +29,7 @@ class _AsignacionesDocentePageState extends State<AsignacionesDocentePage> {
   int? _asignaturaId;
   int? _periodoId;
   AsignacionEstadoFiltro _estado = AsignacionEstadoFiltro.todos;
+  int _currentPage = 1;
 
   @override
   void initState() {
@@ -79,6 +81,7 @@ class _AsignacionesDocentePageState extends State<AsignacionesDocentePage> {
       _asignaturaId = null;
       _periodoId = null;
       _estado = AsignacionEstadoFiltro.todos;
+      _currentPage = 1;
     });
   }
 
@@ -201,14 +204,27 @@ class _AsignacionesDocentePageState extends State<AsignacionesDocentePage> {
                     asignaturaId: _asignaturaId,
                     periodoId: _periodoId,
                     estado: _estado,
-                    onDocente: (value) => setState(() => _docenteId = value),
-                    onAsignatura: (value) =>
-                        setState(() => _asignaturaId = value),
-                    onPeriodo: (value) => setState(() => _periodoId = value),
-                    onEstado: (value) => setState(() => _estado = value),
+                    onDocente: (value) => setState(() {
+                      _docenteId = value;
+                      _currentPage = 1;
+                    }),
+                    onAsignatura: (value) => setState(() {
+                      _asignaturaId = value;
+                      _currentPage = 1;
+                    }),
+                    onPeriodo: (value) => setState(() {
+                      _periodoId = value;
+                      _currentPage = 1;
+                    }),
+                    onEstado: (value) => setState(() {
+                      _estado = value;
+                      _currentPage = 1;
+                    }),
                     onBuscar: () => setState(
-                      () =>
-                          _query = _searchController.text.trim().toLowerCase(),
+                      () {
+                        _query = _searchController.text.trim().toLowerCase();
+                        _currentPage = 1;
+                      },
                     ),
                     onLimpiar: _limpiar,
                   ),
@@ -256,72 +272,77 @@ class _AsignacionesDocentePageState extends State<AsignacionesDocentePage> {
         ),
       );
     }
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 760) {
-          return SingleChildScrollView(
-            child: AsignacionDocenteTable(
-              items: items,
-              onEdit: _form,
-              onToggle: _toggle,
-            ),
-          );
-        }
-        return ListView.separated(
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.docenteNombre,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        StatusBadge(active: item.estado),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${item.asignatura.codigo} · ${item.asignatura.nombre}',
-                    ),
-                    Text(
-                      item.periodo.nombre,
-                      style: const TextStyle(color: AppColors.muted),
-                    ),
-                    const Divider(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => _form(item),
-                          child: const Text('Editar'),
-                        ),
-                        TextButton(
-                          onPressed: () => _toggle(item),
-                          child: Text(
-                            item.estado ? 'Desactivar' : 'Reactivar',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+    return PaginatedView<AsignacionDocente>(
+      items: items,
+      currentPage: _currentPage,
+      onPageChanged: (page) => setState(() => _currentPage = page),
+      builder: (context, items) => LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 760) {
+            return SingleChildScrollView(
+              child: AsignacionDocenteTable(
+                items: items,
+                onEdit: _form,
+                onToggle: _toggle,
               ),
             );
-          },
-        );
-      },
+          }
+          return ListView.separated(
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.docenteNombre,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          StatusBadge(active: item.estado),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${item.asignatura.codigo} · ${item.asignatura.nombre}',
+                      ),
+                      Text(
+                        item.periodo.nombre,
+                        style: const TextStyle(color: AppColors.muted),
+                      ),
+                      const Divider(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => _form(item),
+                            child: const Text('Editar'),
+                          ),
+                          TextButton(
+                            onPressed: () => _toggle(item),
+                            child: Text(
+                              item.estado ? 'Desactivar' : 'Reactivar',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
