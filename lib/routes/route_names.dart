@@ -17,6 +17,9 @@ class RouteNames {
   static const docente = '/docente';
   static const docenteAsignaturas = '/docente/asignaturas';
 
+  static String docenteResumen(int asignacionId) =>
+      '/docente/asignaturas/$asignacionId/resumen';
+
   static String docenteEstudiantes(int asignacionId) =>
       '/docente/asignaturas/$asignacionId/estudiantes';
 

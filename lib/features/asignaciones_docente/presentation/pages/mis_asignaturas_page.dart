@@ -56,8 +56,7 @@ class _MisAsignaturasPageState extends State<MisAsignaturasPage> {
                       asignacion: asignacion,
                       onTap: () => Navigator.pushNamed(
                         context,
-                        RouteNames.docenteEstudiantes(asignacion.id),
-                        arguments: asignacion,
+                        RouteNames.docenteResumen(asignacion.id),
                       ),
                     );
                   },

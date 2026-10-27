@@ -47,6 +47,8 @@ import '../features/usuarios/presentation/pages/usuarios_page.dart';
 import '../features/reportes/domain/repositories/reporte_repository.dart';
 import '../features/reportes/presentation/controllers/reportes_controller.dart';
 import '../features/reportes/presentation/pages/reportes_page.dart';
+import '../features/resumen_academico/presentation/controllers/resumen_academico_controller.dart';
+import '../features/resumen_academico/presentation/pages/resumen_academico_page.dart';
 import 'route_guard.dart';
 import 'route_names.dart';
 
@@ -194,6 +196,19 @@ class AppRouter {
     if (asignacionId == null) return const _NotFoundPage();
     if (!guard.isDocente) {
       return _UnauthorizedPage(authenticated: guard.hasSession);
+    }
+
+    if (uri.pathSegments[3] == 'resumen') {
+      return ChangeNotifierProvider(
+        create: (_) => ResumenAcademicoController(
+          asignacionesDocente,
+          estudiantes,
+          consultaAsistencias,
+          calificaciones,
+          asignacionId,
+        ),
+        child: const ResumenAcademicoPage(),
+      );
     }
 
     final argument = settings.arguments;
