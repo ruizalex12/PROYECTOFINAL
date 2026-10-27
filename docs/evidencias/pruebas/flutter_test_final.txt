@@ -1,0 +1,39 @@
+EVIDENCIA FINAL DE VALIDACIÓN
+Fecha: 27 de octubre de 2026
+
+Documentos de evidencia:
+- flutter_test_e3.txt: salida completa generada al ejecutar toda la suite.
+- flutter_test_final.txt: reporte consolidado de la validación final.
+
+Comando:
+flutter test
+
+Resultado:
+214 pruebas aprobadas.
+All tests passed.
+
+Análisis estático:
+flutter analyze --no-pub
+Sin observaciones.
+
+Pruebas específicas del resumen académico:
+10 pruebas aprobadas.
+
+Cobertura funcional verificada:
+- apertura del resumen de una asignación propia;
+- filtrado de estudiantes de la asignación;
+- visualización de calificaciones;
+- resumen de asistencia;
+- estado sin estudiantes;
+- cálculo del promedio;
+- cálculo del porcentaje de asistencia;
+- estudiante sin calificación;
+- estudiante sin asistencias;
+- diseño móvil con tarjetas del mismo ancho e indicador compacto de estado.
+
+Compilación APK:
+flutter build apk --release --no-pub --dart-define-from-file=config/local.json
+Compilación exitosa.
+
+Artefacto:
+APK/SFM_Tarija_1.0.5_release.apk
