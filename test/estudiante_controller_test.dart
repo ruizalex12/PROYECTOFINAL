@@ -59,6 +59,15 @@ void main() {
     expect(controller.items.first.nombreCompleto, 'Ana Flores');
   });
 
+  test('ordena estudiantes por ID numérico ascendente', () async {
+    final controller = EstudianteController(
+      _FakeRepository(items: [_inactivo, _ana]),
+    );
+    await controller.cargar();
+    expect(controller.items.map((item) => item.id), [1, 2]);
+    expect(controller.items.map((item) => item.codigo), ['EST-001', 'EST-002']);
+  });
+
   test('crea estudiante correctamente', () async {
     final repository = _FakeRepository(items: []);
     final controller = EstudianteController(repository);

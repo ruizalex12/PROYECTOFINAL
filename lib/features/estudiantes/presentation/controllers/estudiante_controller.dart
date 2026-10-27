@@ -41,10 +41,12 @@ class EstudianteController extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      _items = await _repository.listar(
+      final results = await _repository.listar(
         busqueda: _busqueda,
         estado: _estado,
       );
+      _items = List<Estudiante>.of(results)
+        ..sort((left, right) => left.id.compareTo(right.id));
       _state =
           _items.isEmpty ? EstudianteViewState.empty : EstudianteViewState.data;
     } catch (error) {
