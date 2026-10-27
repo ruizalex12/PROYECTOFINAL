@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../domain/entities/asignatura.dart';
 
@@ -43,7 +42,9 @@ class AsignaturaCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(asignatura.descripcion ?? 'Sin descripción',
-                  style: const TextStyle(color: AppColors.muted)),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  )),
               const SizedBox(height: 14),
               const Divider(height: 1),
               const SizedBox(height: 8),
