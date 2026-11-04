@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
-                        Icons.lock_person_outlined,
+                        Icons.school_outlined,
                         size: 29,
                         color: scheme.primary,
                       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/spanish_date_picker.dart';
 import '../../domain/entities/usuario.dart';
 import '../controllers/usuario_controller.dart';
 import 'usuario_form_validator.dart';
@@ -100,7 +101,7 @@ class _UsuarioFormDialogState extends State<UsuarioFormDialog> {
 
   Future<void> _seleccionarFecha({required bool nacimiento}) async {
     final now = DateTime.now();
-    final selected = await showDatePicker(
+    final selected = await showSpanishDatePicker(
       context: context,
       initialDate: nacimiento
           ? (_nacimiento ?? DateTime(now.year - 20))

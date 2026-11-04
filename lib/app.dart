@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
@@ -58,6 +59,9 @@ class ProyectoFinalApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SFM Tarija',
+      locale: const Locale('es', 'BO'),
+      supportedLocales: const [Locale('es', 'BO')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       themeMode: theme.themeMode,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
@@ -73,6 +77,9 @@ class SetupRequiredApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
+        locale: const Locale('es', 'BO'),
+        supportedLocales: const [Locale('es', 'BO')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
         home: const Scaffold(

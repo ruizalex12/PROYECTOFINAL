@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../shared/widgets/app_states.dart';
 import '../../../../shared/widgets/paginated_view.dart';
+import '../../../../shared/widgets/spanish_date_picker.dart';
 import '../../../asignaciones_docente/domain/entities/asignacion_docente.dart';
 import '../../domain/entities/asistencia.dart';
 import '../controllers/asistencia_controller.dart';
@@ -34,7 +35,7 @@ class _AsistenciaPageState extends State<AsistenciaPage> {
         : controller.fecha.isAfter(widget.asignacion.periodo.fechaFin)
             ? widget.asignacion.periodo.fechaFin
             : controller.fecha;
-    final value = await showDatePicker(
+    final value = await showSpanishDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: widget.asignacion.periodo.fechaInicio,

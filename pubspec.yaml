@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   pdf: ^3.13.1
   printing: ^5.15.1
   provider: ">=6.1.2 <7.0.0"

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/spanish_date_picker.dart';
 import '../../../asistencia/domain/entities/asistencia.dart';
 import '../../domain/entities/consulta_asistencia.dart';
 
@@ -190,7 +191,7 @@ class _DateFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
         onTap: () async {
-          final selected = await showDatePicker(
+          final selected = await showSpanishDatePicker(
             context: context,
             initialDate: value ?? DateTime.now(),
             firstDate: DateTime(2000),

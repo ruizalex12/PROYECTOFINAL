@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/spanish_date_picker.dart';
 import '../../domain/entities/periodo_academico.dart';
 import '../controllers/periodo_academico_controller.dart';
 
@@ -40,7 +41,7 @@ class _PeriodoAcademicoFormDialogState
 
   Future<void> _selectDate(bool start) async {
     final current = start ? _fechaInicio : _fechaFin;
-    final selected = await showDatePicker(
+    final selected = await showSpanishDatePicker(
       context: context,
       initialDate: current ?? _fechaInicio ?? DateTime.now(),
       firstDate: DateTime(2000),

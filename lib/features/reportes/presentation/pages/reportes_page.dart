@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/spanish_date_picker.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../shared/layouts/admin_shell.dart';
 import '../../../../shared/widgets/app_states.dart';
@@ -450,7 +451,7 @@ class _FilterPanel extends StatelessWidget {
                   ? label
                   : '${value.day}/${value.month}/${value.year}'),
               onPressed: () async {
-                final picked = await showDatePicker(
+                final picked = await showSpanishDatePicker(
                     context: context,
                     initialDate: value ?? DateTime.now(),
                     firstDate: DateTime(2000),
