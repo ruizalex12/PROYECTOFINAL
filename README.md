@@ -4,11 +4,11 @@
 
 Aplicación académica desarrollada con Flutter y Supabase como trabajo final del Diplomado en Desarrollo Web y Aplicaciones Móviles de la Universidad Autónoma Juan Misael Saracho (UAJMS), gestión 2026.
 
-El sistema centraliza la administración de usuarios, docentes, estudiantes y procesos académicos del Seminario de Formación Ministerial Tarija. La administración se realiza desde Flutter Web y el trabajo académico del docente desde la aplicación Android. El backend utiliza PostgreSQL, Supabase Auth, PostgREST, Realtime y Row Level Security (RLS).
+El sistema centraliza la administración de usuarios, docentes, estudiantes y procesos académicos del Seminario de Formación Ministerial Tarija. La administración está orientada principalmente a Flutter Web y el trabajo académico del docente a la aplicación Android. La separación funcional se controla por rol, no por plataforma. El backend utiliza PostgreSQL, Supabase Auth, PostgREST, Realtime y Row Level Security (RLS).
 
 ## Plataformas
 
-| Plataforma | Usuario | Función principal |
+| Plataforma de uso principal | Usuario | Función principal |
 |---|---|---|
 | Flutter Web | Administrador | Gestión y consulta de la información académica |
 | Aplicación Android | Docente | Resumen académico de sus asignaturas, asistencia y calificaciones |
@@ -88,6 +88,7 @@ Flutter no calcula ni envía el código durante el alta. La identity y el trigge
 - Actualización automática de asistencia y calificaciones administrativas mediante Supabase Realtime.
 - Reportes de inscripciones, asistencia, calificaciones y asignaciones docentes.
 - Exportación CSV de reportes en web.
+- Impresión y exportación o compartición de reportes en PDF.
 
 Las bajas son lógicas mediante `estado=false`; no se eliminan los registros académicos.
 
